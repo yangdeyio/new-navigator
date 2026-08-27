@@ -1,35 +1,22 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
+import 'ant-design-vue/dist/reset.css'
 import App from './App.vue'
-import { Layout,Menu,Icon,Tabs,Modal,Input,Button } from 'ant-design-vue'
 import router from './router/route'
-import axios from 'axios'
-import 'fullpage.js/vendors/scrolloverflow' // Optional. When using scrollOverflow:true
-import VueFullPage from 'vue-fullpage.js'
+import { Layout, Menu, Tabs, Button } from 'ant-design-vue'
 
-Vue.prototype.$http = axios
-Vue.component(Layout.name,Layout)
-Vue.component(Menu.name,Menu)
-Vue.component(Menu.Item.name,Menu.Item)
-Vue.component(Icon.name,Icon)
-Vue.component(Layout.Header.name, Layout.Header);
-Vue.component(Layout.Content.name, Layout.Content);
-Vue.component(Layout.Footer.name, Layout.Footer);
-Vue.component(Layout.Sider.name, Layout.Sider);
-Vue.component(Tabs.name,Tabs)
-Vue.component(Tabs.TabPane.name, Tabs.TabPane)
-Vue.component(Modal.name,Modal)
-Vue.component(Input.name,Input)
-Vue.component(Button.name,Button)
-Vue.use(VueFullPage);
+const app = createApp(App)
 
-new Vue({
-  el: '#app',
-  render: h => h(App)
-});
+app.use(router)
 
-Vue.config.productionTip = false
+app.component(Layout.name, Layout)
+app.component(Layout.Sider.name, Layout.Sider)
+app.component(Layout.Header.name, Layout.Header)
+app.component(Layout.Content.name, Layout.Content)
+app.component(Layout.Footer.name, Layout.Footer)
+app.component(Menu.name, Menu)
+app.component(Menu.Item.name, Menu.Item)
+app.component(Tabs.name, Tabs)
+app.component(Tabs.TabPane.name, Tabs.TabPane)
+app.component(Button.name, Button)
 
-new Vue({
-  router,
-  render: h => h(App),
-}).$mount('#app')
+app.mount('#app')

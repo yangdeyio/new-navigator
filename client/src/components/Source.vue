@@ -1,14 +1,17 @@
 <template>
   <div class="sourceWrapper">
-    <a-tabs :key="activeKey">
+    <a-tabs v-model:active-key="activeKey">
       <a-tab-pane v-for="vo in itemList" :key="vo.source">
-        <span slot="tab">
-          <a-icon :type="vo.icon" />{{vo.label}}
-        </span>
+        <template #tab>
+          <span>
+            <component :is="vo.icon" />
+            {{ vo.label }}
+          </span>
+        </template>
         <div class="wrapper">
           <ul>
-            <li @click="changeVisible" data-remind="document">
-              <a-icon type="plus-circle" />
+            <li data-remind="document" @click="changeVisible">
+              <PlusCircleOutlined />
             </li>
             <a
               v-for="(item,index) in list[vo.source]"
@@ -16,8 +19,8 @@
               :href="item.href"
               target="_blank"
             >
-            <Favicon :href="item.href"/>
-            <div class="value-text">{{ item.value }}</div>
+              <Favicon :href="item.href"/>
+              <div class="value-text">{{ item.value }}</div>
             </a>
           </ul>
         </div>
@@ -26,12 +29,23 @@
   </div>
 </template>
 <script>
-import Favicon from './Favicon.vue';
+import Favicon from './Favicon.vue'
 import X from '../Data/source'
+import {
+  ExperimentOutlined,
+  SwitcherOutlined,
+  RocketOutlined,
+  VideoCameraOutlined,
+  ThunderboltOutlined,
+  PlusCircleOutlined
+} from '@ant-design/icons-vue'
+
 export default {
   components: {
-    Favicon
+    Favicon,
+    PlusCircleOutlined
   },
+  emits: ['visible'],
   data() {
     return {
       activeKey: 'document',
@@ -40,27 +54,27 @@ export default {
         {
           label: '技术文档',
           source: 'document',
-          icon: 'experiment',
+          icon: ExperimentOutlined,
         },
         {
           label: '技术博客',
           source: 'blog',
-          icon: 'switcher',
+          icon: SwitcherOutlined,
         },
         {
           label: '设计',
           source: 'design',
-          icon: 'rocket',
+          icon: RocketOutlined,
         },
         {
           label: '视频学习',
           source: 'video',
-          icon: 'video-camera',
+          icon: VideoCameraOutlined,
         },
         {
           label: '娱乐',
           source: 'entertainment',
-          icon: 'thunderbolt',
+          icon: ThunderboltOutlined,
         },
       ],
     }
@@ -84,7 +98,6 @@ a {
   border-radius: 4px;
   margin-top: 30px;
   .wrapper {
-    // background: turquoise;
     ul {
       width: 100%;
       overflow-y: auto;
@@ -118,12 +131,12 @@ a {
     }
   }
 
-  /deep/.ant-tabs-nav-scroll {
+  :deep(.ant-tabs-nav-scroll) {
     display: flex;
     justify-content: center;
     align-items: center;
   }
-  /deep/.ant-tabs-tab {
+  :deep(.ant-tabs-tab) {
     font-weight: 500;
     color: #ffffff;
     font-size: 14px;

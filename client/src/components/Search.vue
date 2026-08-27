@@ -1,19 +1,24 @@
 <template>
   <div id="wrapper">
     <div class="change">
-      <span @click="doBing" :class="{'active': isBing}">Bing</span>
-      <span @click="doGoogle" :class="{'active': isGoogle}">Google</span>
+      <span :class="{'active': isBing}" @click="doBing">Bing</span>
+      <span :class="{'active': isGoogle}" @click="doGoogle">Google</span>
     </div>
     <div class="search-wrapper">
-      <input type="text" v-model="value" @keypress.enter="search"/>
+      <input v-model="value" type="text" @keypress.enter="search"/>
       <div class="search-button" @click="search">
-        <a-icon type="search" style="fontSize: 24px;" class="search-icon"/>
+        <SearchOutlined style="fontSize: 24px;" class="search-icon"/>
       </div>
     </div>
   </div>
 </template>
 <script>
+import { SearchOutlined } from '@ant-design/icons-vue'
+
 export default {
+  components: {
+    SearchOutlined
+  },
   data(){
     return {
       value: '',

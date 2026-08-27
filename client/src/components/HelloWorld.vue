@@ -3,17 +3,17 @@
     <div class="add-item-container">
       <div class="add-item">
         <div class="add">
-          <a-icon type="plus"></a-icon>
+          <PlusOutlined />
         </div>
       </div>
     </div>
       <Search class="search"/>
-      <Source @visible="change" />
+      <SourceView @visible="change" />
       <div class="mask" :style="{display: `${visible ? 'block' : 'none'}`}">
         <div class="edit">
           <div class="title"><span>请编辑需要加入的网站</span></div>
-          <div class="format">名称：<input type="text" v-model="name"></div>
-          <div class="format">网址：<input type="text" v-model="ip"></div>
+          <div class="format">名称：<input v-model="name" type="text"></div>
+          <div class="format">网址：<input v-model="ip" type="text"></div>
           <div class="buttons">
             <a-button @click="confirm">确认</a-button>
             <a-button @click="cancel">取消</a-button>
@@ -24,13 +24,15 @@
 </template>
 
 <script>
-import Search from './Search'
-import Source from './Source'
+import Search from './Search.vue'
+import SourceView from './Source.vue'
+import { PlusOutlined } from '@ant-design/icons-vue'
 export default {
   name: 'HelloWorld',
   components: {
     Search,
-    Source
+    SourceView,
+    PlusOutlined
   },
   data(){
     return {
@@ -60,9 +62,6 @@ export default {
     getKey(e){
       this.key = e.key
     }
-  },
-  props: {
-    msg: String
   }
 }
 </script>

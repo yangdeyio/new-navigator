@@ -4,16 +4,10 @@
 <script>
 export default {
   props: {
-    href: [String]
-  },
-  created() {
-    const favicon = this.getFavicon(this.href);
-    this.image = new Image();
-    this.image.addEventListener('load', this.loadImage);
-    this.image.src = favicon;
-  },
-  beforeDestroy() {
-    this.image.removeEventListener('load', this.loadImage);
+    href: {
+      type: String,
+      default: ''
+    }
   },
   data() {
     return {
@@ -31,6 +25,15 @@ export default {
         return s;
       }
     }
+  },
+  created() {
+    const favicon = this.getFavicon(this.href);
+    this.image = new Image();
+    this.image.addEventListener('load', this.loadImage);
+    this.image.src = favicon;
+  },
+  beforeUnmount() {
+    this.image.removeEventListener('load', this.loadImage);
   },
   methods: {
     loadImage() {

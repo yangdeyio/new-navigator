@@ -1,17 +1,30 @@
-import Router from 'vue-router'
-import Vue from 'vue'
-import Source from '../components/Source.vue'
+import { createRouter, createWebHashHistory } from 'vue-router'
+import HelloWorld from '../components/HelloWorld.vue'
+import Collect from '../components/Collect.vue'
+import Worklog from '../components/Worklog.vue'
+import Message from '../components/Message.vue'
 
-Vue.use(Router)
-
-export default new Router({
+const router = createRouter({
+  history: createWebHashHistory(),
   routes: [
     {
       name: 'source',
       path: '/',
-      components: {
-        main: Source
-      }
+      component: HelloWorld
+    },
+    {
+      path: '/collect',
+      component: Collect
+    },
+    {
+      path: '/worklog',
+      component: Worklog
+    },
+    {
+      path: '/message',
+      component: Message
     }
   ]
 })
+
+export default router

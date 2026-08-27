@@ -1,83 +1,85 @@
 <template>
   <div id="app">
-          <div class="content">
-            <component :is="whichOne"></component>
-          </div>
+    <a-layout style="min-height: 100vh;">
+      <a-layout-sider v-model:collapsed="collapsed" collapsible theme="dark">
+        <div class="logo">一览</div>
+        <a-menu
+          theme="dark"
+          mode="inline"
+          :selected-keys="[activePath]"
+          @click="onMenuClick"
+        >
+          <a-menu-item key="/">
+            <HomeOutlined />
+            <span>导航</span>
+          </a-menu-item>
+          <a-menu-item key="/collect">
+            <StarOutlined />
+            <span>收藏文章</span>
+          </a-menu-item>
+          <a-menu-item key="/worklog">
+            <EditOutlined />
+            <span>工作日志</span>
+          </a-menu-item>
+          <a-menu-item key="/message">
+            <CommentOutlined />
+            <span>留言板</span>
+          </a-menu-item>
+        </a-menu>
+      </a-layout-sider>
+      <a-layout-content class="content">
+        <router-view />
+      </a-layout-content>
+    </a-layout>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld'
-import Collect from './components/Collect'
-import Worklog from './components/Worklog'
-import Message from './components/Message'
+import { HomeOutlined, StarOutlined, EditOutlined, CommentOutlined } from '@ant-design/icons-vue'
 
 export default {
-  name: 'app',
-  data(){
+  name: 'App',
+  components: {
+    HomeOutlined,
+    StarOutlined,
+    EditOutlined,
+    CommentOutlined
+  },
+  data() {
     return {
-      collapsed: false,
-      key: 1,
-      whichOne: 'HelloWorld'
+      collapsed: false
     }
   },
-  components: {
-    HelloWorld,
-    Collect,
-    Worklog,
-    Message
-  },
-  beforeMount(){
-    // this.$http('https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1')
-    // .then((res)=>{
-    //   console.log(res)
-    // })
-  },
-  mounted(){
+  computed: {
+    activePath() {
+      return this.$route.path === '' ? '/' : this.$route.path
+    }
   },
   methods: {
-    getKey(e){
-      this.key = e.key
-      this.setComponent()
-    },
-    setComponent(){
-      let key = parseInt(this.key)
-      if(key === 1){
-        this.whichOne = 'HelloWorld'
-      }else if(key === 2){
-        this.whichOne = 'Collect'
-      }else if(key === 3){
-        this.whichOne = 'Worklog'
-      }else if(key === 4){
-        this.whichOne = 'Message'
+    onMenuClick({ key }) {
+      if (key !== this.$route.path) {
+        this.$router.push(key)
       }
     }
   }
 }
 </script>
 <style lang="scss" scoped>
-#components-layout-demo-custom-trigger .trigger {
-  font-size: 18px;
-  line-height: 64px;
-  padding: 0 24px;
-  cursor: pointer;
-  transition: color .3s;
-}
+#app {
+  .logo {
+    height: 32px;
+    margin: 16px;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 500;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.2);
+    line-height: 32px;
+  }
 
-#components-layout-demo-custom-trigger .trigger:hover {
-  color: #1890ff;
-}
-
-#components-layout-demo-custom-trigger .logo {
-  height: 32px;
-  background: rgba(255,255,255,.2);
-  margin: 16px;
-}
-
-.content{
-  height: 100vh;
-  background-image: url('https://cn.bing.com/th?id=OHR.UnkindnessRavens_ZH-CN2840574948_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp');
-  background-size: cover;
-  border-top: 1px solid #cccccc;
+  .content {
+    background-image: url('https://cn.bing.com/th?id=OHR.UnkindnessRavens_ZH-CN2840574948_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp');
+    background-size: cover;
+  }
 }
 </style>
