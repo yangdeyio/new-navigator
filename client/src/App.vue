@@ -1,6 +1,7 @@
 <template>
   <div id="app">
-    <a-layout style="min-height: 100vh;">
+    <router-view v-if="isLogin" />
+    <a-layout v-else style="min-height: 100vh;">
       <a-layout-sider v-model:collapsed="collapsed" collapsible theme="dark">
         <div class="logo">一览</div>
         <a-menu
@@ -26,6 +27,11 @@
             <span>留言板</span>
           </a-menu-item>
         </a-menu>
+        <div class="user-box" :class="{ collapsed }">
+          <span class="avatar">{{ initial }}</span>
+          <span v-if="!collapsed" class="username">{{ username }}</span>
+          <LogoutOutlined v-if="!collapsed" class="logout" title="退出登录" @click="onLogout" />
+        </div>
       </a-layout-sider>
       <a-layout-content class="content">
         <router-view />
@@ -35,7 +41,8 @@
 </template>
 
 <script>
-import { HomeOutlined, StarOutlined, EditOutlined, CommentOutlined } from '@ant-design/icons-vue'
+import { HomeOutlined, StarOutlined, EditOutlined, CommentOutlined, LogoutOutlined } from '@ant-design/icons-vue'
+import { store, logout } from './store'
 
 export default {
   name: 'App',
@@ -43,7 +50,8 @@ export default {
     HomeOutlined,
     StarOutlined,
     EditOutlined,
-    CommentOutlined
+    CommentOutlined,
+    LogoutOutlined
   },
   data() {
     return {
@@ -51,6 +59,15 @@ export default {
     }
   },
   computed: {
+    isLogin() {
+      return this.$route.name === 'login'
+    },
+    username() {
+      return (store.user && store.user.username) || ''
+    },
+    initial() {
+      return (this.username[0] || '?').toUpperCase()
+    },
     activePath() {
       return this.$route.path === '' ? '/' : this.$route.path
     }
@@ -60,6 +77,10 @@ export default {
       if (key !== this.$route.path) {
         this.$router.push(key)
       }
+    },
+    async onLogout() {
+      await logout()
+      this.$router.replace('/login')
     }
   }
 }
@@ -75,6 +96,52 @@ export default {
     text-align: center;
     background: rgba(255, 255, 255, 0.2);
     line-height: 32px;
+  }
+
+  .user-box {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+
+    &.collapsed {
+      justify-content: center;
+      padding: 12px 8px;
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: #1890ff;
+      color: #ffffff;
+      font-size: 14px;
+      line-height: 28px;
+      text-align: center;
+    }
+
+    .username {
+      flex: 1;
+      margin-left: 10px;
+      color: rgba(255, 255, 255, 0.85);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .logout {
+      color: rgba(255, 255, 255, 0.45);
+      cursor: pointer;
+
+      &:hover {
+        color: #ffffff;
+      }
+    }
   }
 
   .content {

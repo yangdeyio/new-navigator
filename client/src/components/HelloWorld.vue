@@ -27,6 +27,8 @@
 import Search from './Search.vue'
 import SourceView from './Source.vue'
 import { PlusOutlined } from '@ant-design/icons-vue'
+import { message } from 'ant-design-vue'
+import { addBookmark } from '../store'
 export default {
   name: 'HelloWorld',
   components: {
@@ -49,18 +51,26 @@ export default {
     },
     close(){
       this.visible = false
+      this.name = ''
+      this.ip = ''
     },
-    confirm(){
-      this.close()
-      let source = JSON.parse(localStorage.getItem('all-source'));
-      let arr = [{"href": this.ip,"value": this.name}];
-      source[this.keyword].unshift(...arr);
+    async confirm(){
+      const name = this.name.trim()
+      const href = this.ip.trim()
+      if (!name || !href) {
+        message.warning('名称和网址不能为空')
+        return
+      }
+      try {
+        await addBookmark(this.keyword, href, name)
+        this.close()
+        message.success('已添加')
+      } catch (e) {
+        message.error((e.response && e.response.data && e.response.data.error) || '添加失败')
+      }
     },
     cancel(){
       this.close()
-    },
-    getKey(e){
-      this.key = e.key
     }
   }
 }

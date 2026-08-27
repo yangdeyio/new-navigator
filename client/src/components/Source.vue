@@ -14,13 +14,21 @@
               <PlusCircleOutlined />
             </li>
             <a
-              v-for="(item,index) in list[vo.source]"
-              :key="index"
+              v-for="item in list[vo.source]"
+              :key="item.id"
               :href="item.href"
               target="_blank"
             >
               <Favicon :href="item.href"/>
               <div class="value-text">{{ item.value }}</div>
+              <a-popconfirm
+                title="确定删除该书签？"
+                ok-text="删除"
+                cancel-text="取消"
+                @confirm="onDelete(vo.source, item.id)"
+              >
+                <CloseOutlined class="del" @click.stop />
+              </a-popconfirm>
             </a>
           </ul>
         </div>
@@ -30,26 +38,28 @@
 </template>
 <script>
 import Favicon from './Favicon.vue'
-import X from '../Data/source'
 import {
   ExperimentOutlined,
   SwitcherOutlined,
   RocketOutlined,
   VideoCameraOutlined,
   ThunderboltOutlined,
-  PlusCircleOutlined
+  PlusCircleOutlined,
+  CloseOutlined
 } from '@ant-design/icons-vue'
+import { store, removeBookmark } from '../store'
 
 export default {
   components: {
     Favicon,
-    PlusCircleOutlined
+    PlusCircleOutlined,
+    CloseOutlined
   },
   emits: ['visible'],
   data() {
     return {
       activeKey: 'document',
-      list: X,
+      list: store.bookmarks,
       itemList: [
         {
           label: '技术文档',
@@ -83,6 +93,9 @@ export default {
     changeVisible(e) {
       let keyword = e.target.getAttribute('data-remind')
       this.$emit('visible', keyword)
+    },
+    onDelete(category, id) {
+      removeBookmark(category, id)
     }
   }
 }
@@ -117,6 +130,8 @@ a {
         cursor: pointer;
         transition: all 0.5s;
         color: rgba(0, 0, 0, 0.65);
+        position: relative;
+
         .value-text {
           line-height: 30px;
           max-width: 80px;
@@ -124,8 +139,26 @@ a {
           white-space: nowrap;
           text-overflow: ellipsis;
         }
+
+        .del {
+          display: none;
+          position: absolute;
+          top: 1px;
+          right: 3px;
+          font-size: 12px;
+          color: rgba(0, 0, 0, 0.35);
+
+          &:hover {
+            color: #ff4d4f;
+          }
+        }
+
         &:hover {
           background: #ffffff;
+
+          .del {
+            display: block;
+          }
         }
       }
     }

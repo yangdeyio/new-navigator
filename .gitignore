@@ -20,3 +20,11 @@ yarn-error.log*
 *.sw?
 package-lock.json
 yarn.lock
+
+# build output (deployed by Cloudflare Pages, no longer committed)
+client/dist/
+
+# cloudflare local dev secrets / state
+.dev.vars
+.wrangler/
+client/migrations/0002_seed.sql

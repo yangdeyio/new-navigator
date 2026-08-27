@@ -2,7 +2,17 @@ import { createApp } from 'vue'
 import 'ant-design-vue/dist/reset.css'
 import App from './App.vue'
 import router from './router/route'
-import { Layout, Menu, Tabs, Button } from 'ant-design-vue'
+import {
+  Layout,
+  Menu,
+  Tabs,
+  Button,
+  Input,
+  List,
+  Avatar,
+  Spin,
+  Popconfirm
+} from 'ant-design-vue'
 
 const app = createApp(App)
 
@@ -18,5 +28,13 @@ app.component(Menu.Item.name, Menu.Item)
 app.component(Tabs.name, Tabs)
 app.component(Tabs.TabPane.name, Tabs.TabPane)
 app.component(Button.name, Button)
+app.component(Input.name, Input)
+app.component(Input.TextArea.name, Input.TextArea)
+app.component(List.name, List)
+app.component(List.Item.name, List.Item)
+app.component(List.Item.Meta.name, List.Item.Meta)
+app.component(Avatar.name, Avatar)
+app.component(Spin.name, Spin)
+app.component(Popconfirm.name, Popconfirm)
 
 app.mount('#app')
