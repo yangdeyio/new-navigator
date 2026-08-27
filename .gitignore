@@ -20,6 +20,7 @@ yarn-error.log*
 *.sw?
 package-lock.json
 yarn.lock
+pnpm-lock.yaml
 
 # build output (deployed by Cloudflare Pages, no longer committed)
 client/dist/
