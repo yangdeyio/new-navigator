@@ -30,13 +30,16 @@ export default {
     this.doBing()
   },
   methods: {
-    search(){
-      if(this.isGoogle){
-        window.open(`https://www.google.com/search?q=${this.value}`)
-      }else{
-        window.open(`https://cn.bing.com/search?q=${this.value}`)
-      }
-    },
+  search(){
+    const q = this.value.trim()
+    if(!q) return
+    const query = encodeURIComponent(q)
+    if(this.isGoogle){
+      window.open(`https://www.google.com/search?q=${query}`)
+    }else{
+      window.open(`https://cn.bing.com/search?q=${query}`)
+    }
+  },
     doBing(){
       this.isBing = true
       this.isGoogle = false

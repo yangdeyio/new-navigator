@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <router-view v-if="isLogin" />
+    <router-view v-if="isAuthPage" />
     <a-layout v-else style="min-height: 100vh;">
       <a-layout-sider v-model:collapsed="collapsed" collapsible theme="dark">
         <div class="logo">一览</div>
@@ -59,8 +59,8 @@ export default {
     }
   },
   computed: {
-    isLogin() {
-      return this.$route.name === 'login'
+    isAuthPage() {
+      return !!this.$route.meta.public
     },
     username() {
       return (store.user && store.user.username) || ''
@@ -145,8 +145,12 @@ export default {
   }
 
   .content {
-    background-image: url('https://cn.bing.com/th?id=OHR.UnkindnessRavens_ZH-CN2840574948_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp');
+    background-image:
+      linear-gradient(135deg, rgba(24, 90, 157, 0.82), rgba(33, 26, 82, 0.86)),
+      url('https://cn.bing.com/th?id=OHR.UnkindnessRavens_ZH-CN2840574948_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp');
     background-size: cover;
+    background-position: center;
+    min-height: 100vh;
   }
 }
 </style>

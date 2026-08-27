@@ -11,7 +11,9 @@ import {
   List,
   Avatar,
   Spin,
-  Popconfirm
+  Popconfirm,
+  Checkbox,
+  Card
 } from 'ant-design-vue'
 
 const app = createApp(App)
@@ -36,5 +38,7 @@ app.component(List.Item.Meta.name, List.Item.Meta)
 app.component(Avatar.name, Avatar)
 app.component(Spin.name, Spin)
 app.component(Popconfirm.name, Popconfirm)
+app.component(Checkbox.name, Checkbox)
+app.component(Card.name, Card)
 
 app.mount('#app')

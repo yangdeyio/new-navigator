@@ -28,7 +28,7 @@
                 <template #title>{{ item.username }}</template>
                 <template #description>{{ item.content }}</template>
               </a-list-item-meta>
-              <div class="time">{{ item.created_at }}</div>
+              <div class="time">{{ relativeTime(item.created_at) }}</div>
             </a-list-item>
           </template>
         </a-list>
@@ -40,6 +40,7 @@
 import axios from 'axios'
 import { message } from 'ant-design-vue'
 import { store } from '../store'
+import { relativeTime } from '../utils/format'
 
 export default {
   name: 'Message',
@@ -60,6 +61,7 @@ export default {
     this.load()
   },
   methods: {
+    relativeTime,
     async load() {
       this.loading = true
       try {

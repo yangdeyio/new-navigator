@@ -4,6 +4,7 @@ import Collect from '../components/Collect.vue'
 import Worklog from '../components/Worklog.vue'
 import Message from '../components/Message.vue'
 import Login from '../components/Login.vue'
+import Register from '../components/Register.vue'
 import { initAuth, store } from '../store'
 
 const router = createRouter({
@@ -30,6 +31,12 @@ const router = createRouter({
       name: 'login',
       path: '/login',
       component: Login,
+      meta: { public: true }
+    },
+    {
+      name: 'register',
+      path: '/register',
+      component: Register,
       meta: { public: true }
     }
   ]

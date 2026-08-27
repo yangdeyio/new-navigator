@@ -10,7 +10,7 @@
         </template>
         <div class="wrapper">
           <ul>
-            <li data-remind="document" @click="changeVisible">
+            <li class="add-cell" :title="`添加到${vo.label}`" @click="$emit('add', activeKey)">
               <PlusCircleOutlined />
             </li>
             <a
@@ -18,17 +18,21 @@
               :key="item.id"
               :href="item.href"
               target="_blank"
+              v-bind="anchorAttrs(item.href)"
             >
-              <Favicon :href="item.href"/>
+              <Favicon :href="item.href" />
               <div class="value-text">{{ item.value }}</div>
-              <a-popconfirm
-                title="确定删除该书签？"
-                ok-text="删除"
-                cancel-text="取消"
-                @confirm="onDelete(vo.source, item.id)"
-              >
-                <CloseOutlined class="del" @click.stop />
-              </a-popconfirm>
+              <div class="ops" @click.stop>
+                <EditOutlined class="op edit" title="编辑" @click="$emit('edit', { category: vo.source, item })" />
+                <a-popconfirm
+                  title="确定删除该书签？"
+                  ok-text="删除"
+                  cancel-text="取消"
+                  @confirm="onDelete(vo.source, item.id)"
+                >
+                  <CloseOutlined class="op del" title="删除" />
+                </a-popconfirm>
+              </div>
             </a>
           </ul>
         </div>
@@ -45,57 +49,45 @@ import {
   VideoCameraOutlined,
   ThunderboltOutlined,
   PlusCircleOutlined,
-  CloseOutlined
+  CloseOutlined,
+  EditOutlined
 } from '@ant-design/icons-vue'
 import { store, removeBookmark } from '../store'
+import { message } from 'ant-design-vue'
 
 export default {
   components: {
     Favicon,
     PlusCircleOutlined,
-    CloseOutlined
+    CloseOutlined,
+    EditOutlined
   },
-  emits: ['visible'],
+  emits: ['add', 'edit'],
   data() {
     return {
       activeKey: 'document',
-      list: store.bookmarks,
       itemList: [
-        {
-          label: '技术文档',
-          source: 'document',
-          icon: ExperimentOutlined,
-        },
-        {
-          label: '技术博客',
-          source: 'blog',
-          icon: SwitcherOutlined,
-        },
-        {
-          label: '设计',
-          source: 'design',
-          icon: RocketOutlined,
-        },
-        {
-          label: '视频学习',
-          source: 'video',
-          icon: VideoCameraOutlined,
-        },
-        {
-          label: '娱乐',
-          source: 'entertainment',
-          icon: ThunderboltOutlined,
-        },
-      ],
+        { label: '技术文档', source: 'document', icon: ExperimentOutlined },
+        { label: '技术博客', source: 'blog', icon: SwitcherOutlined },
+        { label: '设计', source: 'design', icon: RocketOutlined },
+        { label: '视频学习', source: 'video', icon: VideoCameraOutlined },
+        { label: '娱乐', source: 'entertainment', icon: ThunderboltOutlined }
+      ]
+    }
+  },
+  computed: {
+    list() {
+      return store.bookmarks
     }
   },
   methods: {
-    changeVisible(e) {
-      let keyword = e.target.getAttribute('data-remind')
-      this.$emit('visible', keyword)
+    anchorAttrs(href) {
+      // 非 http(s) 链接不作外链跳转
+      return /^https?:\/\//.test(href) ? {} : { onclick: 'return false' }
     },
-    onDelete(category, id) {
-      removeBookmark(category, id)
+    async onDelete(category, id) {
+      await removeBookmark(category, id)
+      message.success('已删除')
     }
   }
 }
@@ -106,9 +98,10 @@ a {
 }
 .sourceWrapper {
   position: relative;
-  width: 640px;
+  width: 680px;
+  max-width: 96vw;
   margin: 0 auto;
-  border-radius: 4px;
+  border-radius: 8px;
   margin-top: 30px;
   .wrapper {
     ul {
@@ -119,46 +112,71 @@ a {
       li,
       a {
         width: 120px;
-        height: 36px;
-        background: rgba(245, 246, 241, 0.7);
+        min-height: 36px;
+        background: rgba(255, 255, 255, 0.72);
         font-weight: 500;
         display: flex;
-        justify-content: center;
         align-items: center;
+        justify-content: flex-start;
+        padding: 0 8px;
         margin: 4px;
-        border-radius: 4px;
+        border-radius: 8px;
         cursor: pointer;
-        transition: all 0.5s;
-        color: rgba(0, 0, 0, 0.65);
+        transition: all 0.2s;
+        color: rgba(0, 0, 0, 0.72);
         position: relative;
+        overflow: hidden;
 
         .value-text {
           line-height: 30px;
-          max-width: 80px;
+          max-width: 78px;
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;
         }
 
-        .del {
+        .ops {
           display: none;
           position: absolute;
-          top: 1px;
-          right: 3px;
-          font-size: 12px;
-          color: rgba(0, 0, 0, 0.35);
+          inset: 0;
+          background: rgba(255, 255, 255, 0.92);
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
 
-          &:hover {
-            color: #ff4d4f;
+          .op {
+            font-size: 15px;
+            color: rgba(0, 0, 0, 0.45);
+            cursor: pointer;
+            padding: 2px;
+
+            &.edit:hover {
+              color: #1890ff;
+            }
+            &.del:hover {
+              color: #ff4d4f;
+            }
           }
         }
 
         &:hover {
           background: #ffffff;
+          box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
 
-          .del {
-            display: block;
+          .ops {
+            display: flex;
           }
+        }
+      }
+
+      .add-cell {
+        justify-content: center;
+        font-size: 20px;
+        color: rgba(0, 0, 0, 0.35);
+        background: rgba(255, 255, 255, 0.4);
+
+        &:hover {
+          color: #1890ff;
         }
       }
     }
@@ -173,6 +191,7 @@ a {
     font-weight: 500;
     color: #ffffff;
     font-size: 14px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
   }
 }
 </style>

@@ -1,6 +1,6 @@
 import { getSessionToken, verifyJwt, json } from './lib/auth.js'
 
-const PUBLIC_PATHS = new Set(['/api/auth/login', '/api/auth/register'])
+const PUBLIC_PATHS = new Set(['/api/auth/login', '/api/auth/register', '/api/auth/config'])
 
 export const onRequest = async (context) => {
   const { request, env } = context

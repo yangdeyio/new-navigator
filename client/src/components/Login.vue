@@ -25,11 +25,15 @@
         :loading="loading"
         @click="submit"
       >登录</a-button>
-      <div class="hint">账号由管理员分配,暂不开放注册</div>
+      <div class="hint">
+        <span v-if="!allowRegister">账号由管理员分配，暂不开放注册</span>
+        <router-link v-else class="link" to="/register">没有账号？立即注册</router-link>
+      </div>
     </a-card>
   </div>
 </template>
 <script>
+import axios from 'axios'
 import { store, login } from '../store'
 
 export default {
@@ -39,11 +43,21 @@ export default {
       username: '',
       password: '',
       loading: false,
-      error: ''
+      error: '',
+      allowRegister: false
     }
   },
-  mounted() {
-    if (store.user) this.$router.replace('/')
+  async mounted() {
+    if (store.user) {
+      this.$router.replace('/')
+      return
+    }
+    try {
+      const { data } = await axios.get('/api/auth/config')
+      this.allowRegister = data.allowRegister === true
+    } catch {
+      // 拿不到配置时按关闭注册处理
+    }
   },
   methods: {
     async submit() {
@@ -123,6 +137,10 @@ export default {
     text-align: center;
     color: rgba(0, 0, 0, 0.35);
     font-size: 12px;
+
+    .link {
+      color: #1890ff;
+    }
   }
 }
 </style>
