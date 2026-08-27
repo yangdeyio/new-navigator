@@ -33,7 +33,7 @@
           <LogoutOutlined v-if="!collapsed" class="logout" title="退出登录" @click="onLogout" />
         </div>
       </a-layout-sider>
-      <a-layout-content class="content">
+      <a-layout-content class="content" :style="contentStyle">
         <router-view />
       </a-layout-content>
     </a-layout>
@@ -43,6 +43,7 @@
 <script>
 import { HomeOutlined, StarOutlined, EditOutlined, CommentOutlined, LogoutOutlined } from '@ant-design/icons-vue'
 import { store, logout } from './store'
+import { randomBackground } from './utils/background'
 
 export default {
   name: 'App',
@@ -55,12 +56,18 @@ export default {
   },
   data() {
     return {
-      collapsed: false
+      collapsed: false,
+      bgUrl: randomBackground()
     }
   },
   computed: {
     isAuthPage() {
       return !!this.$route.meta.public
+    },
+    contentStyle() {
+      return {
+        backgroundImage: `linear-gradient(135deg, rgba(24, 90, 157, 0.82), rgba(33, 26, 82, 0.86)), url('${this.bgUrl}')`
+      }
     },
     username() {
       return (store.user && store.user.username) || ''
@@ -145,11 +152,9 @@ export default {
   }
 
   .content {
-    background-image:
-      linear-gradient(135deg, rgba(24, 90, 157, 0.82), rgba(33, 26, 82, 0.86)),
-      url('https://cn.bing.com/th?id=OHR.UnkindnessRavens_ZH-CN2840574948_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp');
     background-size: cover;
     background-position: center;
+    background-attachment: fixed;
     min-height: 100vh;
   }
 }

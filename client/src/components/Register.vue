@@ -1,5 +1,5 @@
 <template>
-  <div class="auth-page">
+  <div class="auth-page" :style="bgStyle">
     <a-card class="auth-card" :bordered="false">
       <div class="logo">一览</div>
       <div class="subtitle">创建账号 · 开启你的导航站</div>
@@ -16,6 +16,7 @@
 </template>
 <script>
 import { register } from '../store'
+import { randomBackground } from '../utils/background'
 
 export default {
   name: 'Register',
@@ -25,7 +26,15 @@ export default {
       password: '',
       confirmed: '',
       loading: false,
-      error: ''
+      error: '',
+      bgUrl: randomBackground()
+    }
+  },
+  computed: {
+    bgStyle() {
+      return {
+        backgroundImage: `linear-gradient(135deg, rgba(24, 90, 157, 0.82), rgba(33, 26, 82, 0.86)), url('${this.bgUrl}')`
+      }
     }
   },
   methods: {
@@ -68,8 +77,9 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-image: url('https://cn.bing.com/th?id=OHR.UnkindnessRavens_ZH-CN2840574948_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp');
   background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
 
 .auth-card {

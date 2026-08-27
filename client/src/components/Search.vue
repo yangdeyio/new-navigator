@@ -55,45 +55,34 @@ export default {
 #wrapper{
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   .change{
+    display: inline-flex;
+    gap: 8px;
     align-self: flex-start;
-    text-align: center;
-    margin-bottom: -1px;
+    margin-bottom: 12px;
     span{
-      display: inline-block;
-      width: 80px;
-      height: 42px;
-      font-size: 18px;
-      line-height: 42px;
-      background: #cccccc;
-      position: relative;
-      color: #1F1F1F;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 76px;
+      height: 38px;
+      padding: 0 18px;
+      border-radius: 19px;
+      font-size: 15px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(6px);
       cursor: pointer;
-      opacity: 0.8;
-      border-top-left-radius: 8px;
-      &:first-child{
-        margin-right: 8px;
-      }
-      &::after{
-        content: '';
-        display: block;
-        border-width: 21px;
-        border-style: solid;
-        border-color: transparent transparent #cccccc #cccccc;
-        position: absolute;
-        top: 0;
-        right: 0;
-        transform: translateX(100%);
-        z-index: 10;
+      transition: background 0.25s, color 0.25s, box-shadow 0.25s;
+      &:hover{
+        background: rgba(255, 255, 255, 0.28);
       }
       &.active{
-        background: #efefef;
-        z-index: 10;
-        opacity: 1;
-        color: #4285F4;
-        &::after{
-          border-color: transparent transparent #efefef #efefef;
-        }
+        color: #ffffff;
+        background: #1890ff;
+        box-shadow: 0 4px 14px rgba(24, 144, 255, 0.4);
       }
     }
   }
@@ -103,8 +92,9 @@ export default {
     align-items: center;
     padding: 4px 8px;
     background: #efefef;
-    border-radius: 0 8px 8px 8px;
+    border-radius: 12px;
     width: 640px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
     &.active{
       //border: 1px solid #232323;
     }

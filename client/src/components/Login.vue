@@ -1,5 +1,5 @@
 <template>
-  <div class="login-page">
+  <div class="login-page" :style="bgStyle">
     <a-card class="login-card" :bordered="false">
       <div class="logo">一览</div>
       <div class="subtitle">个人导航站 · 请登录</div>
@@ -35,6 +35,7 @@
 <script>
 import axios from 'axios'
 import { store, login } from '../store'
+import { randomBackground } from '../utils/background'
 
 export default {
   name: 'Login',
@@ -44,7 +45,15 @@ export default {
       password: '',
       loading: false,
       error: '',
-      allowRegister: false
+      allowRegister: false,
+      bgUrl: randomBackground()
+    }
+  },
+  computed: {
+    bgStyle() {
+      return {
+        backgroundImage: `linear-gradient(135deg, rgba(24, 90, 157, 0.82), rgba(33, 26, 82, 0.86)), url('${this.bgUrl}')`
+      }
     }
   },
   async mounted() {
@@ -86,8 +95,9 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-image: url('https://cn.bing.com/th?id=OHR.UnkindnessRavens_ZH-CN2840574948_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp');
   background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
 
 .login-card {

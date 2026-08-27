@@ -117,12 +117,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.hello {
-  padding-top: 100px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  .hello {
+    height: 100vh;
+    padding-top: 40px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    box-sizing: border-box;
+
 
   .add-item-container {
     position: fixed;

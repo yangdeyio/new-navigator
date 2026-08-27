@@ -103,10 +103,14 @@ a {
   margin: 0 auto;
   border-radius: 8px;
   margin-top: 30px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   .wrapper {
     ul {
       width: 100%;
-      overflow-y: auto;
       display: flex;
       flex-wrap: wrap;
       li,
@@ -182,6 +186,20 @@ a {
     }
   }
 
+  :deep(.ant-tabs) {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  :deep(.ant-tabs-nav) {
+    flex-shrink: 0;
+  }
+  :deep(.ant-tabs-content-holder) {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
   :deep(.ant-tabs-nav-scroll) {
     display: flex;
     justify-content: center;
