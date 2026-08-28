@@ -20,7 +20,7 @@
         <a-button @click="onExport"><ExportOutlined /></a-button>
       </a-tooltip>
       <a-tooltip title="导入书签">
-        <a-button @click="$refs.fileInput.click()"><ImportOutlined /></a-button>
+        <a-button @click="pickFile"><ImportOutlined /></a-button>
       </a-tooltip>
       <input
         ref="fileInput"
@@ -58,30 +58,37 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
 import Search from './Search.vue'
 import SourceView from './Source.vue'
 import { PlusOutlined, ImportOutlined, ExportOutlined } from '@ant-design/icons-vue'
 import { message, Modal } from 'ant-design-vue'
 import { store, addBookmark, updateBookmark, loadBookmarks, importBookmarks } from '../store'
 import { getApiError } from '../utils/api'
-import { LEGACY_CATEGORIES, categoryLabel, orderedCategories } from '../utils/categories'
+import { LEGACY_CATEGORIES, orderedCategories } from '../utils/categories'
 import { parseBookmarksHtml, looksLikeBookmarksHtml } from '../utils/bookmarkHtml'
+import type { BookmarkImportItem, BookmarkCategory } from '../types'
 
-// 与后端 lib/bookmarks.js 的 MAX_VALUE_LENGTH 一致
+// 与后端 lib/bookmarks.ts 的 MAX_VALUE_LENGTH 一致
 const MAX_VALUE_LENGTH = 120
-// 与后端 import.js 的 MAX_IMPORT 一致
+// 与后端 import.ts 的 MAX_IMPORT 一致
 const MAX_IMPORT = 2000
 
-export default {
+interface CategoryOption {
+  source: BookmarkCategory
+  label: string
+}
+
+export default defineComponent({
   name: 'HelloWorld',
   components: { Search, SourceView, PlusOutlined, ImportOutlined, ExportOutlined },
   data() {
     return {
       visible: false,
-      mode: 'add',
+      mode: 'add' as 'add' | 'edit',
       category: 'document',
-      editingId: null,
+      editingId: null as number | null,
       name: '',
       ip: ''
     }
@@ -93,7 +100,7 @@ export default {
     bookmarksError() {
       return store.bookmarksError
     },
-    categoryOptions() {
+    categoryOptions(): CategoryOption[] {
       const legacy = LEGACY_CATEGORIES.map((c) => ({ source: c.key, label: c.label }))
       const legacyKeys = new Set(LEGACY_CATEGORIES.map((c) => c.key))
       const extra = orderedCategories(store.bookmarks)
@@ -103,7 +110,10 @@ export default {
     }
   },
   methods: {
-    onAdd(category) {
+    pickFile() {
+      ;(this.$refs.fileInput as HTMLInputElement).click()
+    },
+    onAdd(category?: BookmarkCategory) {
       this.mode = 'add'
       this.category = category || 'document'
       this.editingId = null
@@ -111,7 +121,7 @@ export default {
       this.ip = ''
       this.visible = true
     },
-    onEdit({ category, item }) {
+    onEdit({ category, item }: { category: BookmarkCategory; item: { id: number; href: string; value: string } }) {
       this.mode = 'edit'
       this.category = category
       this.editingId = item.id
@@ -137,7 +147,7 @@ export default {
           await addBookmark(this.category, href, name)
           message.success('已添加')
         } else {
-          await updateBookmark(this.category, this.editingId, { href, value: name })
+          await updateBookmark(this.category, this.editingId!, { href, value: name })
           message.success('已保存')
         }
         this.close()
@@ -165,9 +175,10 @@ export default {
       a.click()
       URL.revokeObjectURL(url)
     },
-    async onImportFile(e) {
-      const file = e.target.files && e.target.files[0]
-      e.target.value = ''
+    async onImportFile(e: Event) {
+      const input = e.target as HTMLInputElement
+      const file = input.files && input.files[0]
+      input.value = ''
       if (!file) return
       let text
       try {
@@ -177,15 +188,15 @@ export default {
         return
       }
 
-      let rawItems
+      let rawItems: BookmarkImportItem[]
       if (looksLikeBookmarksHtml(text)) {
         // 浏览器导出的 Netscape 书签 HTML：文件夹名即分类
         rawItems = parseBookmarksHtml(text)
       } else {
         try {
-          const parsed = JSON.parse(text)
+          const parsed = JSON.parse(text) as BookmarkImportItem[] | { bookmarks?: BookmarkImportItem[] }
           // 兼容导出格式 { bookmarks: [...] } 和纯数组格式
-          rawItems = Array.isArray(parsed) ? parsed : parsed.bookmarks
+          rawItems = Array.isArray(parsed) ? parsed : parsed.bookmarks || []
         } catch {
           message.error('文件不是有效的书签文件（支持浏览器导出的 HTML 或本站导出的 JSON）')
           return
@@ -200,9 +211,9 @@ export default {
       const existingHrefs = new Set(
         Object.values(store.bookmarks).flatMap((list) => list.map((item) => item.href))
       )
-      const seen = new Set()
+      const seen = new Set<string>()
       let skipped = 0
-      const normalized = []
+      const normalized: BookmarkImportItem[] = []
       for (const item of rawItems) {
         const href = String((item && item.href) || '').trim()
         const value = String((item && item.value) || '').trim()
@@ -254,7 +265,7 @@ export default {
       }
     }
   }
-}
+})
 </script>
 
 <style lang="scss" scoped>

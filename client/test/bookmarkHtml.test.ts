@@ -1,10 +1,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
-import { parseBookmarksHtml, looksLikeBookmarksHtml } from '../src/utils/bookmarkHtml.js'
+import { parseBookmarksHtml, looksLikeBookmarksHtml } from '../src/utils/bookmarkHtml.ts'
 
 globalThis.DOMParser = class {
-  parseFromString(html) {
+  parseFromString(html: string): Document {
     return new JSDOM(html).window.document
   }
 }
@@ -52,8 +52,10 @@ test('parseBookmarksHtml puts links outside any folder into 未分类', () => {
   </DL><p>`
   const items = parseBookmarksHtml(html)
   const loose = items.find((i) => i.href === 'https://loose.com/')
+  const inFolder = items.find((i) => i.href === 'https://gitlab.com/')
+  assert.ok(loose && inFolder)
   assert.equal(loose.category, '未分类')
-  assert.equal(items.find((i) => i.href === 'https://gitlab.com/').category, '工作')
+  assert.equal(inFolder.category, '工作')
 })
 
 test('parseBookmarksHtml handles DL as sibling of DT (alternate export format)', () => {

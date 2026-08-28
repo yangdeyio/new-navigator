@@ -1,23 +1,23 @@
-import { hashPassword, signJwt, sessionCookie, json } from '../../lib/auth.js'
+import { hashPassword, signJwt, sessionCookie, json } from '../../lib/auth.ts'
 
 const USERNAME_RE = /^[a-zA-Z0-9_-]{2,24}$/
 
-async function verifyTurnstile(secretKey, token) {
+async function verifyTurnstile(secretKey: string, token: unknown): Promise<boolean> {
   const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ secret: secretKey, response: token || '' })
+    body: new URLSearchParams({ secret: secretKey, response: String(token || '') })
   })
-  const data = await res.json()
+  const data = (await res.json()) as { success?: boolean }
   return data.success === true
 }
 
-export async function onRequestPost(context) {
+export async function onRequestPost(context: HandlerContext): Promise<Response> {
   const { request, env } = context
 
   if (env.ALLOW_REGISTER !== '1') return json({ error: '注册未开放' }, 403)
 
-  let body
+  let body: Record<string, unknown>
   try {
     body = await request.json()
   } catch {
@@ -41,10 +41,10 @@ export async function onRequestPost(context) {
     const result = await env.DB
       .prepare('INSERT INTO users (username, password_hash, salt) VALUES (?, ?, ?) RETURNING id')
       .bind(username, hash, salt)
-      .first()
-    const token = await signJwt({ sub: result.id, username }, env.JWT_SECRET)
+      .first<{ id: number }>()
+    const token = await signJwt({ sub: result!.id, username }, env.JWT_SECRET)
     return json(
-      { user: { id: result.id, username } },
+      { user: { id: result!.id, username } },
       200,
       { 'Set-Cookie': sessionCookie(token) }
     )

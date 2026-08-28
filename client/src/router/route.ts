@@ -51,5 +51,4 @@ router.beforeEach(async (to) => {
   await initAuth()
   if (!store.user) return { name: 'login', query: { redirect: to.fullPath } }
 })
-
 export default router

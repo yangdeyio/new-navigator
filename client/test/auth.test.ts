@@ -10,9 +10,14 @@ import {
   sessionCookie,
   clearSessionCookie,
   SESSION_TTL_SECONDS
-} from '../functions/lib/auth.js'
+} from '../functions/lib/auth.ts'
 
 const SECRET = 'unit-test-secret-that-is-long-enough'
+
+// 只需满足 headers.get 形状的极简 Request 替身
+function fakeRequest(cookie: string): Request {
+  return { headers: { get: (name: string) => (name === 'Cookie' ? cookie : null) } } as unknown as Request
+}
 
 test('password hashing round-trips', async () => {
   const plain = 'sup3rSecret!'
@@ -81,16 +86,16 @@ test('clearSessionCookie expires the cookie', () => {
 })
 
 test('getSessionToken reads session from cookie header', () => {
-  const req = { headers: new Map([['Cookie', 'foo=1; session=my-token; bar=baz']]) }
+  const req = fakeRequest('foo=1; session=my-token; bar=baz')
   assert.equal(getSessionToken(req), 'my-token')
 })
 
 test('getSessionToken returns null when absent', () => {
-  const req = { headers: new Map([['Cookie', 'foo=1']]) }
+  const req = fakeRequest('foo=1')
   assert.equal(getSessionToken(req), null)
 })
 
 test('parseCookies handles simple header', () => {
-  const req = { headers: new Map([['Cookie', 'a=1; b=hello%20world']]) }
+  const req = fakeRequest('a=1; b=hello%20world')
   assert.deepEqual(parseCookies(req), { a: '1', b: 'hello world' })
 })

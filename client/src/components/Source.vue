@@ -40,7 +40,8 @@
     </a-tabs>
   </div>
 </template>
-<script>
+<script lang="ts">
+import { defineComponent, type Component } from 'vue'
 import Favicon from './Favicon.vue'
 import {
   ExperimentOutlined,
@@ -57,6 +58,13 @@ import { store, removeBookmark } from '../store'
 import { message } from 'ant-design-vue'
 import { getApiError } from '../utils/api'
 import { LEGACY_CATEGORIES, categoryLabel, orderedCategories } from '../utils/categories'
+import type { BookmarkCategory } from '../types'
+
+interface TabDef {
+  source: BookmarkCategory
+  label: string
+  icon: Component
+}
 
 const LEGACY_ICONS = Object.fromEntries(
   LEGACY_CATEGORIES.map((c) => [
@@ -71,7 +79,7 @@ const LEGACY_ICONS = Object.fromEntries(
   ])
 )
 
-export default {
+export default defineComponent({
   components: {
     Favicon,
     PlusCircleOutlined,
@@ -88,7 +96,7 @@ export default {
     list() {
       return store.bookmarks
     },
-    tabs() {
+    tabs(): TabDef[] {
       return orderedCategories(store.bookmarks).map((key) => ({
         source: key,
         label: categoryLabel(key),
@@ -100,7 +108,7 @@ export default {
     // 当前选中的分类被删空后仍保留 key；这里保证 activeKey 始终指向存在的分类
     tabs: {
       immediate: true,
-      handler(tabs) {
+      handler(tabs: TabDef[]) {
         if (!tabs.some((t) => t.source === this.activeKey) && tabs.length > 0) {
           this.activeKey = tabs[0].source
         }
@@ -108,11 +116,11 @@ export default {
     }
   },
   methods: {
-    anchorAttrs(href) {
+    anchorAttrs(href: string): Record<string, string> {
       // 非 http(s) 链接不作外链跳转
       return /^https?:\/\//.test(href) ? {} : { onclick: 'return false' }
     },
-    async onDelete(category, id) {
+    async onDelete(category: BookmarkCategory, id: number) {
       try {
         await removeBookmark(category, id)
         message.success('已删除')
@@ -121,7 +129,7 @@ export default {
       }
     }
   }
-}
+})
 </script>
 <style lang="scss" scoped>
 a {

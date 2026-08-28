@@ -1,13 +1,10 @@
-import { json } from '../../lib/auth.js'
+import { json } from '../../lib/auth.ts'
+import { isValidHref } from '../../lib/bookmarks.ts'
 
 const MAX_TITLE_LENGTH = 120
 const MAX_NOTE_LENGTH = 500
 
-function isValidHref(href) {
-  return /^https?:\/\/.+/.test(href) && href.length <= 2048
-}
-
-export async function onRequestGet(context) {
+export async function onRequestGet(context: HandlerContext): Promise<Response> {
   const userId = context.data.user.sub
   const { results } = await context.env.DB.prepare(
     'SELECT id, href, title, note, is_read, created_at FROM collections WHERE user_id = ? ORDER BY is_read ASC, id DESC'
@@ -17,11 +14,11 @@ export async function onRequestGet(context) {
   return json({ collections: results })
 }
 
-export async function onRequestPost(context) {
+export async function onRequestPost(context: HandlerContext): Promise<Response> {
   const { request, env, data } = context
   const userId = data.user.sub
 
-  let body
+  let body: Record<string, unknown>
   try {
     body = await request.json()
   } catch {

@@ -62,14 +62,16 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
 import Favicon from './Favicon.vue'
 import { message } from 'ant-design-vue'
 import { store, loadCollections, addCollection, toggleCollection, removeCollection } from '../store'
 import { relativeTime } from '../utils/format'
 import { getApiError } from '../utils/api'
+import type { Collection } from '../types'
 
-export default {
+export default defineComponent({
   name: 'Collect',
   components: { Favicon },
   data() {
@@ -125,14 +127,14 @@ export default {
         this.posting = false
       }
     },
-    async toggle(item) {
+    async toggle(item: Collection) {
       try {
         await toggleCollection(item.id, !item.is_read)
       } catch (e) {
         message.error(getApiError(e, '更新失败'))
       }
     },
-    async onDelete(id) {
+    async onDelete(id: number) {
       try {
         await removeCollection(id)
         message.success('已删除')
@@ -141,7 +143,7 @@ export default {
       }
     }
   }
-}
+})
 </script>
 <style lang="scss" scoped>
 .collect-page {

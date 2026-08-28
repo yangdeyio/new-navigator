@@ -53,13 +53,14 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
 import { HomeOutlined, StarOutlined, EditOutlined, CommentOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons-vue'
 import { store, logout } from './store'
 import { randomBackground } from './utils/background'
 import ChangePasswordModal from './components/ChangePasswordModal.vue'
 
-export default {
+export default defineComponent({
   name: 'App',
   components: {
     HomeOutlined,
@@ -81,7 +82,7 @@ export default {
     isAuthPage() {
       return !!this.$route.meta.public
     },
-    contentStyle() {
+    contentStyle(): Record<string, string> {
       return {
         backgroundImage: `linear-gradient(135deg, rgba(24, 90, 157, 0.82), rgba(33, 26, 82, 0.86)), url('${this.bgUrl}')`
       }
@@ -97,9 +98,10 @@ export default {
     }
   },
   methods: {
-    onMenuClick({ key }) {
-      if (key !== this.$route.path) {
-        this.$router.push(key)
+    onMenuClick({ key }: { key: string | number }) {
+      const path = String(key)
+      if (path !== this.$route.path) {
+        this.$router.push(path)
       }
     },
     async onLogout() {
@@ -107,7 +109,7 @@ export default {
       this.$router.replace('/login')
     }
   }
-}
+})
 </script>
 <style lang="scss" scoped>
 #app {

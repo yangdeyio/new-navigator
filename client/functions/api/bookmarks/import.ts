@@ -1,13 +1,13 @@
-import { json } from '../../lib/auth.js'
-import { validateBookmark } from '../../lib/bookmarks.js'
+import { json } from '../../lib/auth.ts'
+import { validateBookmark } from '../../lib/bookmarks.ts'
 
 const MAX_IMPORT = 2000
 
-export async function onRequestPost(context) {
+export async function onRequestPost(context: HandlerContext): Promise<Response> {
   const { request, env } = context
   const userId = context.data.user.sub
 
-  let body
+  let body: { bookmarks?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -21,9 +21,9 @@ export async function onRequestPost(context) {
   const rows = []
   for (const item of items) {
     const bookmark = {
-      category: String(item.category || '').trim(),
-      href: String(item.href || '').trim(),
-      value: String(item.value || '').trim()
+      category: String((item as Record<string, unknown>).category || '').trim(),
+      href: String((item as Record<string, unknown>).href || '').trim(),
+      value: String((item as Record<string, unknown>).value || '').trim()
     }
     const error = validateBookmark(bookmark)
     if (error) return json({ error: `「${bookmark.value || bookmark.href || '未知项'}」${error}` }, 400)
@@ -35,9 +35,10 @@ export async function onRequestPost(context) {
     'SELECT category, COALESCE(MAX(sort), 0) AS max_sort FROM bookmarks WHERE user_id = ? GROUP BY category'
   )
     .bind(userId)
-    .all()
-  const counters = Object.fromEntries(results.map((row) => [row.category, row.max_sort]))
-  for (const row of results) counters[row.category] = row.max_sort
+    .all<{ category: string; max_sort: number }>()
+  const counters: Record<string, number> = Object.fromEntries(
+    results.map((row) => [row.category, row.max_sort])
+  )
 
   const stmt = env.DB.prepare(
     'INSERT INTO bookmarks (user_id, category, href, value, sort) VALUES (?, ?, ?, ?, ?)'

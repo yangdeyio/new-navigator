@@ -14,12 +14,13 @@
     <span v-else class="web-icon placeholder" />
   </span>
 </template>
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
 import { firstLetter } from '../utils/format'
 
 const PALETTE = ['#1890ff', '#722ed1', '#13c2c2', '#fa8c16', '#eb2f96', '#a0d911', '#f5222d']
 
-export default {
+export default defineComponent({
   props: {
     href: {
       type: String,
@@ -62,7 +63,7 @@ export default {
       this.failed = true
     }
   }
-}
+})
 </script>
 <style lang="scss" scoped>
 .web-icon-wrap {

@@ -1,16 +1,16 @@
-import { json } from '../../lib/auth.js'
-import { validateBookmark } from '../../lib/bookmarks.js'
+import { json } from '../../lib/auth.ts'
+import { validateBookmark } from '../../lib/bookmarks.ts'
 
-export async function onRequestGet(context) {
+export async function onRequestGet(context: HandlerContext): Promise<Response> {
   const userId = context.data.user.sub
   const { results } = await context.env.DB.prepare(
     'SELECT id, category, href, value FROM bookmarks WHERE user_id = ? ORDER BY category, sort DESC, id DESC'
   )
     .bind(userId)
-    .all()
+    .all<{ id: number; category: string; href: string; value: string }>()
 
   // 分类是动态的，只返回实际存在的分组
-  const grouped = {}
+  const grouped: Record<string, { id: number; href: string; value: string }[]> = {}
   for (const row of results) {
     if (!(row.category in grouped)) grouped[row.category] = []
     grouped[row.category].push({ id: row.id, href: row.href, value: row.value })
@@ -18,11 +18,11 @@ export async function onRequestGet(context) {
   return json({ bookmarks: grouped })
 }
 
-export async function onRequestPost(context) {
+export async function onRequestPost(context: HandlerContext): Promise<Response> {
   const { request } = context
   const userId = context.data.user.sub
 
-  let body
+  let body: Record<string, unknown>
   try {
     body = await request.json()
   } catch {
@@ -43,7 +43,7 @@ export async function onRequestPost(context) {
        RETURNING id`
     )
     .bind(userId, category, href, value, userId, category)
-    .first()
+    .first<{ id: number }>()
 
-  return json({ bookmark: { id: row.id, href, value } }, 201)
+  return json({ bookmark: { id: row!.id, href, value } }, 201)
 }

@@ -27,12 +27,13 @@
   </a-modal>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
 import { message } from 'ant-design-vue'
 import { changePassword } from '../store'
 import { getApiError } from '../utils/api'
 
-export default {
+export default defineComponent({
   name: 'ChangePasswordModal',
   props: {
     open: { type: Boolean, default: false }
@@ -79,7 +80,7 @@ export default {
       }
     }
   }
-}
+})
 </script>
 
 <style lang="scss" scoped>

@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint src functions --fix",
-    "test": "node --test test/*.test.js",
+    "typecheck": "vue-tsc --noEmit && tsc -p functions --noEmit",
+    "test": "node --test test/*.test.ts",
     "db:migrate": "wrangler d1 migrations apply navigator-db --local",
     "db:seed": "node scripts/import-source.mjs --out migrations/0002_seed.sql && wrangler d1 execute navigator-db --local --file=migrations/0002_seed.sql",
     "cf:dev": "wrangler pages dev"
@@ -21,13 +22,19 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "5.20260827.1",
+    "@types/jsdom": "30.0.0",
+    "@types/node": "26.4.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-vue": "^9.32.0",
     "jsdom": "30.0.1",
     "sass": "^1.83.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.68.0",
     "vite": "^6.0.7",
+    "vue-tsc": "3.3.11",
     "wrangler": "4.127.0"
   },
   "allowScripts": {

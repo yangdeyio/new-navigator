@@ -1,10 +1,10 @@
-import { verifyPassword, hashPassword, json } from '../../lib/auth.js'
+import { verifyPassword, hashPassword, json } from '../../lib/auth.ts'
 
-export async function onRequestPost(context) {
+export async function onRequestPost(context: HandlerContext): Promise<Response> {
   const { request, env } = context
   const userId = context.data.user.sub
 
-  let body
+  let body: Record<string, unknown>
   try {
     body = await request.json()
   } catch {
@@ -19,7 +19,7 @@ export async function onRequestPost(context) {
   const user = await env.DB
     .prepare('SELECT password_hash, salt FROM users WHERE id = ?')
     .bind(userId)
-    .first()
+    .first<{ password_hash: string; salt: string }>()
   if (!user || !(await verifyPassword(currentPassword, user.password_hash, user.salt))) {
     return json({ error: '当前密码错误' }, 401)
   }

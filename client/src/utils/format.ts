@@ -1,19 +1,19 @@
 // 把 SQLite 存储的 UTC 时间字符串（"YYYY-MM-DD HH:MM:SS"）转成用户友好的展示。
 // SQLite 的 datetime('now') 返回 UTC，无时区后缀，这里按 UTC 解析再本地化。
 
-function parseDate(input) {
+function parseDate(input: unknown): Date | null {
   if (!input) return null
   // 已带时区后缀（ISO）直接解析
   if (typeof input === 'string' && /Z$|[+-]\d{2}:?\d{2}$/.test(input)) {
     const d = new Date(input)
     return Number.isNaN(d.getTime()) ? null : d
   }
-  const d = new Date(`${input.replace(' ', 'T')}Z`)
+  const d = new Date(`${String(input).replace(' ', 'T')}Z`)
   return Number.isNaN(d.getTime()) ? null : d
 }
 
 // 相对时间：刚刚 / n分钟前 / n小时前 / n天前，超过 7 天显示本地日期
-export function relativeTime(input) {
+export function relativeTime(input: string): string {
   const date = parseDate(input)
   if (!date) return input || ''
   const diff = Date.now() - date.getTime()
@@ -29,6 +29,6 @@ export function relativeTime(input) {
 }
 
 // 让标题始终有兜底展示
-export function firstLetter(text) {
+export function firstLetter(text: string | null | undefined): string {
   return ((text || '?').trim()[0] || '?').toUpperCase()
 }

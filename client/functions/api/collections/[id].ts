@@ -1,18 +1,15 @@
-import { json } from '../../lib/auth.js'
+import { json } from '../../lib/auth.ts'
+import { isValidHref } from '../../lib/bookmarks.ts'
 
 const MAX_TITLE_LENGTH = 120
 const MAX_NOTE_LENGTH = 500
 
-function isValidHref(href) {
-  return /^https?:\/\/.+/.test(href) && href.length <= 2048
-}
-
-export async function onRequestPut(context) {
-  const { request, env, data } = context
+export async function onRequestPut(context: HandlerContext): Promise<Response> {
+  const { request, env, data, params } = context
   const userId = data.user.sub
-  const id = Number(context.params.id)
+  const id = Number(params.id)
 
-  let body
+  let body: Record<string, unknown>
   try {
     body = await request.json()
   } catch {
@@ -37,11 +34,11 @@ export async function onRequestPut(context) {
     return json({ error: `备注最长 ${MAX_NOTE_LENGTH} 字` }, 400)
   }
 
-  const updates = {}
+  const updates: Record<string, string | number> = {}
   if (hasHref) updates.href = href
   if (hasTitle) updates.title = title
   if (hasNote) updates.note = note
-  if (hasIsRead) updates.is_read = isRead
+  if (hasIsRead) updates.is_read = isRead as number
   if (Object.keys(updates).length === 0) return json({ error: '没有可更新的字段' }, 400)
 
   const entries = Object.entries(updates)
@@ -53,16 +50,18 @@ export async function onRequestPut(context) {
     .run()
 
   if (!result.meta.changes) return json({ error: '收藏项不存在' }, 404)
-  const row = await env.DB.prepare('SELECT id, href, title, note, is_read, created_at FROM collections WHERE id = ?')
-    .bind(id)
+  const row = await env.DB.prepare(
+    'SELECT id, href, title, note, is_read, created_at FROM collections WHERE id = ? AND user_id = ?'
+  )
+    .bind(id, userId)
     .first()
   return json({ collection: row })
 }
 
-export async function onRequestDelete(context) {
-  const { env, data } = context
+export async function onRequestDelete(context: HandlerContext): Promise<Response> {
+  const { env, data, params } = context
   const userId = data.user.sub
-  const id = Number(context.params.id)
+  const id = Number(params.id)
 
   const result = await env.DB
     .prepare('DELETE FROM collections WHERE id = ? AND user_id = ?')

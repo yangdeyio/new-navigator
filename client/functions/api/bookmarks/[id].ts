@@ -1,11 +1,12 @@
-import { json } from '../../lib/auth.js'
+import { json } from '../../lib/auth.ts'
+import { MAX_VALUE_LENGTH, isValidHref } from '../../lib/bookmarks.ts'
 
-export async function onRequestPut(context) {
-  const { request, env, data } = context
+export async function onRequestPut(context: HandlerContext): Promise<Response> {
+  const { request, env, data, params } = context
   const userId = data.user.sub
-  const id = Number(context.params.id)
+  const id = Number(params.id)
 
-  let body
+  let body: Record<string, unknown>
   try {
     body = await request.json()
   } catch {
@@ -14,8 +15,8 @@ export async function onRequestPut(context) {
 
   const href = String(body.href || '').trim()
   const value = String(body.value || '').trim()
-  if (!/^https?:\/\/.+/.test(href) || href.length > 2048) return json({ error: '网址无效' }, 400)
-  if (!value || value.length > 50) return json({ error: '名称需为 1-50 个字符' }, 400)
+  if (!isValidHref(href)) return json({ error: '网址无效' }, 400)
+  if (!value || value.length > MAX_VALUE_LENGTH) return json({ error: `名称需为 1-${MAX_VALUE_LENGTH} 个字符` }, 400)
 
   const result = await env.DB
     .prepare('UPDATE bookmarks SET href = ?, value = ? WHERE id = ? AND user_id = ?')
@@ -26,10 +27,10 @@ export async function onRequestPut(context) {
   return json({ ok: true })
 }
 
-export async function onRequestDelete(context) {
-  const { env, data } = context
+export async function onRequestDelete(context: HandlerContext): Promise<Response> {
+  const { env, data, params } = context
   const userId = data.user.sub
-  const id = Number(context.params.id)
+  const id = Number(params.id)
 
   const result = await env.DB
     .prepare('DELETE FROM bookmarks WHERE id = ? AND user_id = ?')

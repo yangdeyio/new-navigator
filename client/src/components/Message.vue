@@ -36,21 +36,23 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
 import axios from 'axios'
 import { message } from 'ant-design-vue'
 import { store } from '../store'
 import { relativeTime } from '../utils/format'
 import { getApiError } from '../utils/api'
+import type { Message as MessageItem } from '../types'
 
-export default {
+export default defineComponent({
   name: 'Message',
   data() {
     return {
       content: '',
       posting: false,
       loading: false,
-      messages: []
+      messages: [] as MessageItem[]
     }
   },
   computed: {
@@ -66,7 +68,7 @@ export default {
     async load() {
       this.loading = true
       try {
-        const { data } = await axios.get('/api/messages')
+        const { data } = await axios.get<{ messages: MessageItem[] }>('/api/messages')
         this.messages = data.messages
       } catch {
         message.error('留言加载失败')
@@ -92,7 +94,7 @@ export default {
       }
     }
   }
-}
+})
 </script>
 <style lang="scss" scoped>
 .msg-page {

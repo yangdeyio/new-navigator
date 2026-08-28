@@ -32,12 +32,14 @@
     </a-card>
   </div>
 </template>
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+import axios from 'axios'
 import { store, login } from '../store'
 import { randomBackground } from '../utils/background'
 import { getApiError } from '../utils/api'
 
-export default {
+export default defineComponent({
   name: 'Login',
   data() {
     return {
@@ -62,7 +64,7 @@ export default {
       return
     }
     try {
-      const { data } = await axios.get('/api/auth/config')
+      const { data } = await axios.get<{ allowRegister: boolean }>('/api/auth/config')
       this.allowRegister = data.allowRegister === true
     } catch {
       // 拿不到配置时按关闭注册处理
@@ -78,7 +80,7 @@ export default {
       this.error = ''
       try {
         await login(this.username.trim(), this.password)
-        const redirect = this.$route.query.redirect || '/'
+        const redirect = typeof this.$route.query.redirect === 'string' ? this.$route.query.redirect : '/'
         this.$router.replace(redirect)
       } catch (e) {
         this.error = getApiError(e, '登录失败')
@@ -87,7 +89,7 @@ export default {
       }
     }
   }
-}
+})
 </script>
 <style lang="scss" scoped>
 .login-page {

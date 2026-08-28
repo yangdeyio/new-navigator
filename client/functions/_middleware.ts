@@ -1,8 +1,8 @@
-import { getSessionToken, verifyJwt, json } from './lib/auth.js'
+import { getSessionToken, verifyJwt, json } from './lib/auth.ts'
 
 const PUBLIC_PATHS = new Set(['/api/auth/login', '/api/auth/register', '/api/auth/config'])
 
-export const onRequest = async (context) => {
+export const onRequest = async (context: MiddlewareContext): Promise<Response> => {
   const { request, env } = context
   const { pathname } = new URL(request.url)
 

@@ -1,10 +1,21 @@
 import { reactive } from 'vue'
 import axios from 'axios'
+import type { Bookmark, BookmarkGroups, BookmarkImportItem, Collection, User, Worklog } from '../types'
 
-export const store = reactive({
+interface StoreState {
+  ready: boolean
+  user: User | null
+  // 分类是动态的（可来自浏览器书签导入），key 为分类名，value 为该书签列表
+  bookmarks: BookmarkGroups
+  loadingBookmarks: boolean
+  bookmarksError: boolean
+  worklogs: Worklog[]
+  collections: Collection[]
+}
+
+export const store = reactive<StoreState>({
   ready: false,
   user: null,
-  // 分类是动态的（可来自浏览器书签导入），key 为分类名，value 为该书签列表
   bookmarks: {},
   loadingBookmarks: false,
   bookmarksError: false,
@@ -13,7 +24,7 @@ export const store = reactive({
 })
 
 // 从 hash 路由（形如 #/collect?x=1）中解析出当前路径，供 401 跳转时携带 redirect
-function currentHashPath() {
+function currentHashPath(): string {
   return (location.hash || '#/').slice(1).split('?')[0] || '/'
 }
 
@@ -29,7 +40,7 @@ axios.interceptors.response.use(
 )
 
 // 登录/初始化时书签加载失败不应否定登录态，错误由页面通过 bookmarksError 展示
-async function safeLoadBookmarks() {
+async function safeLoadBookmarks(): Promise<void> {
   try {
     await loadBookmarks()
   } catch {
@@ -37,10 +48,10 @@ async function safeLoadBookmarks() {
   }
 }
 
-export async function initAuth() {
+export async function initAuth(): Promise<User | null> {
   if (store.ready) return store.user
   try {
-    const { data } = await axios.get('/api/auth/me')
+    const { data } = await axios.get<{ user: User | null }>('/api/auth/me')
     store.user = data.user
   } catch {
     store.user = null
@@ -51,11 +62,11 @@ export async function initAuth() {
   return store.user
 }
 
-export async function loadBookmarks() {
+export async function loadBookmarks(): Promise<void> {
   store.loadingBookmarks = true
   store.bookmarksError = false
   try {
-    const { data } = await axios.get('/api/bookmarks')
+    const { data } = await axios.get<{ bookmarks: BookmarkGroups }>('/api/bookmarks')
     Object.assign(store.bookmarks, data.bookmarks)
   } catch (e) {
     store.bookmarksError = true
@@ -65,25 +76,25 @@ export async function loadBookmarks() {
   }
 }
 
-export async function login(username, password) {
-  const { data } = await axios.post('/api/auth/login', { username, password })
+export async function login(username: string, password: string): Promise<User | null> {
+  const { data } = await axios.post<{ user: User }>('/api/auth/login', { username, password })
   store.user = data.user
   await safeLoadBookmarks()
   return store.user
 }
 
-export async function register(username, password) {
-  const { data } = await axios.post('/api/auth/register', { username, password })
+export async function register(username: string, password: string): Promise<User | null> {
+  const { data } = await axios.post<{ user: User }>('/api/auth/register', { username, password })
   store.user = data.user
   await safeLoadBookmarks()
   return store.user
 }
 
-export async function changePassword(currentPassword, newPassword) {
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
   await axios.post('/api/auth/password', { currentPassword, newPassword })
 }
 
-export async function logout() {
+export async function logout(): Promise<void> {
   try {
     await axios.post('/api/auth/logout')
   } finally {
@@ -95,14 +106,18 @@ export async function logout() {
   }
 }
 
-export async function addBookmark(category, href, value) {
-  const { data } = await axios.post('/api/bookmarks', { category, href, value })
+export async function addBookmark(category: string, href: string, value: string): Promise<Bookmark> {
+  const { data } = await axios.post<{ bookmark: Bookmark }>('/api/bookmarks', { category, href, value })
   if (!store.bookmarks[category]) store.bookmarks[category] = []
   store.bookmarks[category].unshift(data.bookmark)
   return data.bookmark
 }
 
-export async function updateBookmark(category, id, { href, value }) {
+export async function updateBookmark(
+  category: string,
+  id: number,
+  { href, value }: { href: string; value: string }
+): Promise<void> {
   await axios.put(`/api/bookmarks/${id}`, { href, value })
   const list = store.bookmarks[category]
   const idx = list.findIndex((item) => item.id === id)
@@ -111,32 +126,32 @@ export async function updateBookmark(category, id, { href, value }) {
   }
 }
 
-export async function removeBookmark(category, id) {
+export async function removeBookmark(category: string, id: number): Promise<void> {
   await axios.delete(`/api/bookmarks/${id}`)
   const list = store.bookmarks[category]
   const idx = list.findIndex((item) => item.id === id)
   if (idx !== -1) list.splice(idx, 1)
 }
 
-export async function importBookmarks(items) {
-  const { data } = await axios.post('/api/bookmarks/import', { bookmarks: items })
+export async function importBookmarks(items: BookmarkImportItem[]): Promise<number> {
+  const { data } = await axios.post<{ imported: number }>('/api/bookmarks/import', { bookmarks: items })
   await loadBookmarks()
   return data.imported
 }
 
-export async function loadWorklogs() {
-  const { data } = await axios.get('/api/worklogs')
+export async function loadWorklogs(): Promise<void> {
+  const { data } = await axios.get<{ worklogs: Worklog[] }>('/api/worklogs')
   store.worklogs = data.worklogs
 }
 
-export async function addWorklog(content) {
-  const { data } = await axios.post('/api/worklogs', { content })
+export async function addWorklog(content: string): Promise<Worklog> {
+  const { data } = await axios.post<{ worklog: Worklog }>('/api/worklogs', { content })
   store.worklogs.unshift(data.worklog)
   return data.worklog
 }
 
-export async function toggleWorklog(id, isDone) {
-  const { data } = await axios.put(`/api/worklogs/${id}`, { is_done: isDone })
+export async function toggleWorklog(id: number, isDone: boolean): Promise<Worklog> {
+  const { data } = await axios.put<{ worklog: Worklog }>(`/api/worklogs/${id}`, { is_done: isDone })
   const idx = store.worklogs.findIndex((item) => item.id === id)
   if (idx !== -1) store.worklogs[idx] = { ...store.worklogs[idx], ...data.worklog }
   // 未完成的置顶，保持"进行中在上"的展示顺序
@@ -144,25 +159,31 @@ export async function toggleWorklog(id, isDone) {
   return data.worklog
 }
 
-export async function removeWorklog(id) {
+export async function removeWorklog(id: number): Promise<void> {
   await axios.delete(`/api/worklogs/${id}`)
   const idx = store.worklogs.findIndex((item) => item.id === id)
   if (idx !== -1) store.worklogs.splice(idx, 1)
 }
 
-export async function loadCollections() {
-  const { data } = await axios.get('/api/collections')
+export async function loadCollections(): Promise<void> {
+  const { data } = await axios.get<{ collections: Collection[] }>('/api/collections')
   store.collections = data.collections
 }
 
-export async function addCollection({ href, title, note }) {
-  const { data } = await axios.post('/api/collections', { href, title, note })
+export interface CollectionInput {
+  href: string
+  title: string
+  note?: string
+}
+
+export async function addCollection({ href, title, note }: CollectionInput): Promise<Collection> {
+  const { data } = await axios.post<{ collection: Collection }>('/api/collections', { href, title, note })
   store.collections.unshift(data.collection)
   return data.collection
 }
 
-export async function toggleCollection(id, isRead) {
-  const { data } = await axios.put(`/api/collections/${id}`, { is_read: isRead })
+export async function toggleCollection(id: number, isRead: boolean): Promise<Collection> {
+  const { data } = await axios.put<{ collection: Collection }>(`/api/collections/${id}`, { is_read: isRead })
   const idx = store.collections.findIndex((item) => item.id === id)
   if (idx !== -1) store.collections[idx] = { ...store.collections[idx], ...data.collection }
   // 未读置顶
@@ -170,7 +191,7 @@ export async function toggleCollection(id, isRead) {
   return data.collection
 }
 
-export async function removeCollection(id) {
+export async function removeCollection(id: number): Promise<void> {
   await axios.delete(`/api/collections/${id}`)
   const idx = store.collections.findIndex((item) => item.id === id)
   if (idx !== -1) store.collections.splice(idx, 1)

@@ -14,12 +14,13 @@
     </a-card>
   </div>
 </template>
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
 import { register } from '../store'
 import { randomBackground } from '../utils/background'
 import { getApiError } from '../utils/api'
 
-export default {
+export default defineComponent({
   name: 'Register',
   data() {
     return {
@@ -70,7 +71,7 @@ export default {
       }
     }
   }
-}
+})
 </script>
 <style lang="scss" scoped>
 .auth-page {

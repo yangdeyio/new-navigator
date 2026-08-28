@@ -12,10 +12,11 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
 import { SearchOutlined } from '@ant-design/icons-vue'
 
-export default {
+export default defineComponent({
   components: {
     SearchOutlined
   },
@@ -49,7 +50,7 @@ export default {
       this.isGoogle = true
     }
   }
-};
+})
 </script>
 <style lang="scss" scoped>
 #wrapper{

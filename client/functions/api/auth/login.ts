@@ -1,9 +1,9 @@
-import { verifyPassword, signJwt, sessionCookie, json } from '../../lib/auth.js'
+import { verifyPassword, signJwt, sessionCookie, json } from '../../lib/auth.ts'
 
-export async function onRequestPost(context) {
+export async function onRequestPost(context: HandlerContext): Promise<Response> {
   const { request, env } = context
 
-  let body
+  let body: Record<string, unknown>
   try {
     body = await request.json()
   } catch {
@@ -17,7 +17,7 @@ export async function onRequestPost(context) {
   const user = await env.DB
     .prepare('SELECT id, username, password_hash, salt FROM users WHERE username = ?')
     .bind(username)
-    .first()
+    .first<{ id: number; username: string; password_hash: string; salt: string }>()
 
   if (!user || !(await verifyPassword(password, user.password_hash, user.salt))) {
     return json({ error: '用户名或密码错误' }, 401)

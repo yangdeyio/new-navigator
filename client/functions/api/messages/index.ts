@@ -1,8 +1,8 @@
-import { json } from '../../lib/auth.js'
+import { json } from '../../lib/auth.ts'
 
 const MAX_CONTENT_LENGTH = 1000
 
-export async function onRequestGet(context) {
+export async function onRequestGet(context: HandlerContext): Promise<Response> {
   const { results } = await context.env.DB.prepare(
     `SELECT m.id, m.content, m.created_at, u.username
      FROM messages m JOIN users u ON u.id = m.user_id
@@ -11,11 +11,11 @@ export async function onRequestGet(context) {
   return json({ messages: results })
 }
 
-export async function onRequestPost(context) {
+export async function onRequestPost(context: HandlerContext): Promise<Response> {
   const { request, env, data } = context
   const userId = data.user.sub
 
-  let body
+  let body: Record<string, unknown>
   try {
     body = await request.json()
   } catch {
@@ -31,10 +31,10 @@ export async function onRequestPost(context) {
   const row = await env.DB
     .prepare('INSERT INTO messages (user_id, content) VALUES (?, ?) RETURNING id, created_at')
     .bind(userId, content)
-    .first()
+    .first<{ id: number; created_at: string }>()
 
   return json(
-    { message: { id: row.id, content, created_at: row.created_at, username: data.user.username } },
+    { message: { id: row!.id, content, created_at: row!.created_at, username: data.user.username } },
     201
   )
 }

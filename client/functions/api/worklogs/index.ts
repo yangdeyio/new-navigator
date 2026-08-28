@@ -1,8 +1,8 @@
-import { json } from '../../lib/auth.js'
+import { json } from '../../lib/auth.ts'
 
 const MAX_CONTENT_LENGTH = 500
 
-export async function onRequestGet(context) {
+export async function onRequestGet(context: HandlerContext): Promise<Response> {
   const userId = context.data.user.sub
   const { results } = await context.env.DB.prepare(
     'SELECT id, content, is_done, created_at FROM worklogs WHERE user_id = ? ORDER BY is_done ASC, id DESC'
@@ -12,11 +12,11 @@ export async function onRequestGet(context) {
   return json({ worklogs: results })
 }
 
-export async function onRequestPost(context) {
+export async function onRequestPost(context: HandlerContext): Promise<Response> {
   const { request, env, data } = context
   const userId = data.user.sub
 
-  let body
+  let body: Record<string, unknown>
   try {
     body = await request.json()
   } catch {
