@@ -8,7 +8,28 @@
       </div>
     </div>
     <Search class="search" />
-    <SourceView @add="onAdd" @edit="onEdit" />
+    <a-spin :spinning="spinning" wrapper-class-name="bookmarks-spin">
+      <SourceView @add="onAdd" @edit="onEdit" />
+    </a-spin>
+    <div v-if="bookmarksError" class="load-error">
+      <span>书签加载失败</span>
+      <a-button size="small" @click="retryLoad">重试</a-button>
+    </div>
+    <div class="io-actions">
+      <a-tooltip title="导出书签">
+        <a-button @click="onExport"><ExportOutlined /></a-button>
+      </a-tooltip>
+      <a-tooltip title="导入书签">
+        <a-button @click="$refs.fileInput.click()"><ImportOutlined /></a-button>
+      </a-tooltip>
+      <input
+        ref="fileInput"
+        type="file"
+        accept=".json,.html,.htm"
+        style="display: none"
+        @change="onImportFile"
+      />
+    </div>
     <div v-show="visible" class="mask">
       <div class="edit">
         <div class="title">
@@ -25,7 +46,7 @@
         <div v-if="mode === 'add'" class="format">
           <label>分类</label>
           <select v-model="category" class="selected">
-            <option v-for="c in categories" :key="c.source" :value="c.source">{{ c.label }}</option>
+            <option v-for="c in categoryOptions" :key="c.source" :value="c.source">{{ c.label }}</option>
           </select>
         </div>
         <div class="buttons">
@@ -40,30 +61,45 @@
 <script>
 import Search from './Search.vue'
 import SourceView from './Source.vue'
-import { PlusOutlined } from '@ant-design/icons-vue'
-import { message } from 'ant-design-vue'
-import { addBookmark, updateBookmark } from '../store'
+import { PlusOutlined, ImportOutlined, ExportOutlined } from '@ant-design/icons-vue'
+import { message, Modal } from 'ant-design-vue'
+import { store, addBookmark, updateBookmark, loadBookmarks, importBookmarks } from '../store'
+import { getApiError } from '../utils/api'
+import { LEGACY_CATEGORIES, categoryLabel, orderedCategories } from '../utils/categories'
+import { parseBookmarksHtml, looksLikeBookmarksHtml } from '../utils/bookmarkHtml'
 
-const CATEGORIES = [
-  { label: '技术文档', source: 'document' },
-  { label: '技术博客', source: 'blog' },
-  { label: '设计', source: 'design' },
-  { label: '视频学习', source: 'video' },
-  { label: '娱乐', source: 'entertainment' }
-]
+// 与后端 lib/bookmarks.js 的 MAX_VALUE_LENGTH 一致
+const MAX_VALUE_LENGTH = 120
+// 与后端 import.js 的 MAX_IMPORT 一致
+const MAX_IMPORT = 2000
 
 export default {
   name: 'HelloWorld',
-  components: { Search, SourceView, PlusOutlined },
+  components: { Search, SourceView, PlusOutlined, ImportOutlined, ExportOutlined },
   data() {
     return {
-      categories: CATEGORIES,
       visible: false,
       mode: 'add',
       category: 'document',
       editingId: null,
       name: '',
       ip: ''
+    }
+  },
+  computed: {
+    spinning() {
+      return store.loadingBookmarks
+    },
+    bookmarksError() {
+      return store.bookmarksError
+    },
+    categoryOptions() {
+      const legacy = LEGACY_CATEGORIES.map((c) => ({ source: c.key, label: c.label }))
+      const legacyKeys = new Set(LEGACY_CATEGORIES.map((c) => c.key))
+      const extra = orderedCategories(store.bookmarks)
+        .filter((key) => !legacyKeys.has(key))
+        .map((key) => ({ source: key, label: key }))
+      return [...legacy, ...extra]
     }
   },
   methods: {
@@ -106,11 +142,116 @@ export default {
         }
         this.close()
       } catch (e) {
-        message.error((e.response && e.response.data && e.response.data.error) || '操作失败')
+        message.error(getApiError(e, '操作失败'))
       }
     },
     cancel() {
       this.close()
+    },
+    onExport() {
+      const items = Object.entries(store.bookmarks).flatMap(([category, list]) =>
+        list.map(({ href, value }) => ({ category, href, value }))
+      )
+      const data = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        bookmarks: items
+      }
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `bookmarks-${new Date().toISOString().slice(0, 10)}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    },
+    async onImportFile(e) {
+      const file = e.target.files && e.target.files[0]
+      e.target.value = ''
+      if (!file) return
+      let text
+      try {
+        text = await file.text()
+      } catch {
+        message.error('文件读取失败')
+        return
+      }
+
+      let rawItems
+      if (looksLikeBookmarksHtml(text)) {
+        // 浏览器导出的 Netscape 书签 HTML：文件夹名即分类
+        rawItems = parseBookmarksHtml(text)
+      } else {
+        try {
+          const parsed = JSON.parse(text)
+          // 兼容导出格式 { bookmarks: [...] } 和纯数组格式
+          rawItems = Array.isArray(parsed) ? parsed : parsed.bookmarks
+        } catch {
+          message.error('文件不是有效的书签文件（支持浏览器导出的 HTML 或本站导出的 JSON）')
+          return
+        }
+      }
+      if (!Array.isArray(rawItems) || rawItems.length === 0) {
+        message.warning('文件里没有书签')
+        return
+      }
+
+      // 预处理：跳过非 http(s) 链接，超长标题截断，按 href 去掉与现有书签及文件内部重复的项
+      const existingHrefs = new Set(
+        Object.values(store.bookmarks).flatMap((list) => list.map((item) => item.href))
+      )
+      const seen = new Set()
+      let skipped = 0
+      const normalized = []
+      for (const item of rawItems) {
+        const href = String((item && item.href) || '').trim()
+        const value = String((item && item.value) || '').trim()
+        if (!/^https?:\/\//.test(href) || !value) {
+          skipped++
+          continue
+        }
+        if (existingHrefs.has(href) || seen.has(href)) {
+          skipped++
+          continue
+        }
+        seen.add(href)
+        normalized.push({
+          category: String((item && item.category) || '未分类').trim() || '未分类',
+          href,
+          value: value.slice(0, MAX_VALUE_LENGTH)
+        })
+      }
+      if (normalized.length === 0) {
+        message.warning('文件里没有可导入的新书签')
+        return
+      }
+      let pending = normalized
+      if (pending.length > MAX_IMPORT) {
+        pending = pending.slice(0, MAX_IMPORT)
+        skipped += normalized.length - MAX_IMPORT
+      }
+
+      const summary = skipped > 0 ? `（跳过 ${skipped} 条无效或重复）` : ''
+      Modal.confirm({
+        title: `将导入 ${pending.length} 条书签${summary}，是否继续？`,
+        okText: '导入',
+        cancelText: '取消',
+        onOk: async () => {
+          try {
+            const imported = await importBookmarks(pending)
+            message.success(`已导入 ${imported} 条`)
+          } catch (err) {
+            message.error(getApiError(err, '导入失败'))
+          }
+        }
+      })
+    },
+    async retryLoad() {
+      try {
+        await loadBookmarks()
+      } catch (e) {
+        message.error(getApiError(e, '加载失败'))
+      }
     }
   }
 }
@@ -169,6 +310,24 @@ export default {
         }
       }
     }
+  }
+
+  .io-actions {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+  }
+
+  .load-error {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
   }
 
   .mask {

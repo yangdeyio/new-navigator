@@ -13,7 +13,9 @@ import {
   Spin,
   Popconfirm,
   Checkbox,
-  Card
+  Card,
+  Modal,
+  Tooltip
 } from 'ant-design-vue'
 
 const app = createApp(App)
@@ -32,6 +34,9 @@ app.component(Tabs.TabPane.name, Tabs.TabPane)
 app.component(Button.name, Button)
 app.component(Input.name, Input)
 app.component(Input.TextArea.name, Input.TextArea)
+app.component(Input.Password.name, Input.Password)
+app.component(Modal.name, Modal)
+app.component(Tooltip.name, Tooltip)
 app.component(List.name, List)
 app.component(List.Item.name, List.Item)
 app.component(List.Item.Meta.name, List.Item.Meta)

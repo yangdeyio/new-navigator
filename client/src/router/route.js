@@ -38,6 +38,10 @@ const router = createRouter({
       path: '/register',
       component: Register,
       meta: { public: true }
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/'
     }
   ]
 })
@@ -45,7 +49,7 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   if (to.meta.public) return true
   await initAuth()
-  if (!store.user) return { name: 'login' }
+  if (!store.user) return { name: 'login', query: { redirect: to.fullPath } }
 })
 
 export default router

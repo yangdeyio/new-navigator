@@ -87,20 +87,19 @@ export default {
     }
   }
   .search-wrapper{
-    //border: 1px solid #cccccc;
     display: flex;
     align-items: center;
     padding: 4px 8px;
     background: #efefef;
     border-radius: 12px;
     width: 640px;
+    max-width: 92vw;
+    box-sizing: border-box;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-    &.active{
-      //border: 1px solid #232323;
-    }
     input{
       height: 42px;
-      width: 600px;
+      flex: 1;
+      min-width: 0;
       padding: 8px;
       font-size: 14px;
       background: #efefef;

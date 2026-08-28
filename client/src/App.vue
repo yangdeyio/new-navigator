@@ -2,7 +2,13 @@
   <div id="app">
     <router-view v-if="isAuthPage" />
     <a-layout v-else style="min-height: 100vh;">
-      <a-layout-sider v-model:collapsed="collapsed" collapsible theme="dark">
+      <a-layout-sider
+        v-model:collapsed="collapsed"
+        collapsible
+        theme="dark"
+        breakpoint="lg"
+        :collapsed-width="0"
+      >
         <div class="logo">一览</div>
         <a-menu
           theme="dark"
@@ -30,20 +36,28 @@
         <div class="user-box" :class="{ collapsed }">
           <span class="avatar">{{ initial }}</span>
           <span v-if="!collapsed" class="username">{{ username }}</span>
-          <LogoutOutlined v-if="!collapsed" class="logout" title="退出登录" @click="onLogout" />
+          <SettingOutlined
+            v-if="!collapsed"
+            class="action"
+            title="修改密码"
+            @click="pwVisible = true"
+          />
+          <LogoutOutlined v-if="!collapsed" class="action" title="退出登录" @click="onLogout" />
         </div>
       </a-layout-sider>
       <a-layout-content class="content" :style="contentStyle">
         <router-view />
       </a-layout-content>
     </a-layout>
+    <ChangePasswordModal :open="pwVisible" @close="pwVisible = false" />
   </div>
 </template>
 
 <script>
-import { HomeOutlined, StarOutlined, EditOutlined, CommentOutlined, LogoutOutlined } from '@ant-design/icons-vue'
+import { HomeOutlined, StarOutlined, EditOutlined, CommentOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons-vue'
 import { store, logout } from './store'
 import { randomBackground } from './utils/background'
+import ChangePasswordModal from './components/ChangePasswordModal.vue'
 
 export default {
   name: 'App',
@@ -52,11 +66,14 @@ export default {
     StarOutlined,
     EditOutlined,
     CommentOutlined,
-    LogoutOutlined
+    LogoutOutlined,
+    SettingOutlined,
+    ChangePasswordModal
   },
   data() {
     return {
       collapsed: false,
+      pwVisible: false,
       bgUrl: randomBackground()
     }
   },
@@ -141,9 +158,13 @@ export default {
       text-overflow: ellipsis;
     }
 
-    .logout {
+    .action {
       color: rgba(255, 255, 255, 0.45);
       cursor: pointer;
+
+      & + .action {
+        margin-left: 12px;
+      }
 
       &:hover {
         color: #ffffff;

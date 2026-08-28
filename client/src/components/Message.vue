@@ -41,6 +41,7 @@ import axios from 'axios'
 import { message } from 'ant-design-vue'
 import { store } from '../store'
 import { relativeTime } from '../utils/format'
+import { getApiError } from '../utils/api'
 
 export default {
   name: 'Message',
@@ -85,7 +86,7 @@ export default {
         this.messages.unshift(data.message)
         this.content = ''
       } catch (e) {
-        message.error((e.response && e.response.data && e.response.data.error) || '发表失败')
+        message.error(getApiError(e, '发表失败'))
       } finally {
         this.posting = false
       }

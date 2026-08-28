@@ -54,6 +54,7 @@ import { DeleteOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 import { store, loadWorklogs, addWorklog, toggleWorklog, removeWorklog } from '../store'
 import { relativeTime } from '../utils/format'
+import { getApiError } from '../utils/api'
 
 export default {
   name: 'Worklog',
@@ -97,7 +98,7 @@ export default {
         this.content = ''
         message.success('已记录')
       } catch (e) {
-        message.error((e.response && e.response.data && e.response.data.error) || '记录失败')
+        message.error(getApiError(e, '记录失败'))
       } finally {
         this.posting = false
       }
@@ -106,7 +107,7 @@ export default {
       try {
         await toggleWorklog(item.id, !item.is_done)
       } catch (e) {
-        message.error((e.response && e.response.data && e.response.data.error) || '更新失败')
+        message.error(getApiError(e, '更新失败'))
       }
     },
     async onDelete(id) {
@@ -114,7 +115,7 @@ export default {
         await removeWorklog(id)
         message.success('已删除')
       } catch (e) {
-        message.error((e.response && e.response.data && e.response.data.error) || '删除失败')
+        message.error(getApiError(e, '删除失败'))
       }
     }
   }

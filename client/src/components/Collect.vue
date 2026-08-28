@@ -67,6 +67,7 @@ import Favicon from './Favicon.vue'
 import { message } from 'ant-design-vue'
 import { store, loadCollections, addCollection, toggleCollection, removeCollection } from '../store'
 import { relativeTime } from '../utils/format'
+import { getApiError } from '../utils/api'
 
 export default {
   name: 'Collect',
@@ -119,7 +120,7 @@ export default {
         this.note = ''
         message.success('已收藏')
       } catch (e) {
-        message.error((e.response && e.response.data && e.response.data.error) || '收藏失败')
+        message.error(getApiError(e, '收藏失败'))
       } finally {
         this.posting = false
       }
@@ -128,7 +129,7 @@ export default {
       try {
         await toggleCollection(item.id, !item.is_read)
       } catch (e) {
-        message.error((e.response && e.response.data && e.response.data.error) || '更新失败')
+        message.error(getApiError(e, '更新失败'))
       }
     },
     async onDelete(id) {
@@ -136,7 +137,7 @@ export default {
         await removeCollection(id)
         message.success('已删除')
       } catch (e) {
-        message.error((e.response && e.response.data && e.response.data.error) || '删除失败')
+        message.error(getApiError(e, '删除失败'))
       }
     }
   }

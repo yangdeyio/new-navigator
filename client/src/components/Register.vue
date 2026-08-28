@@ -17,6 +17,7 @@
 <script>
 import { register } from '../store'
 import { randomBackground } from '../utils/background'
+import { getApiError } from '../utils/api'
 
 export default {
   name: 'Register',
@@ -63,7 +64,7 @@ export default {
         await register(username, password)
         this.$router.replace('/')
       } catch (e) {
-        this.error = (e.response && e.response.data && e.response.data.error) || '注册失败'
+        this.error = getApiError(e, '注册失败')
       } finally {
         this.loading = false
       }

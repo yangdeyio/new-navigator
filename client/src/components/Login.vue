@@ -33,9 +33,9 @@
   </div>
 </template>
 <script>
-import axios from 'axios'
 import { store, login } from '../store'
 import { randomBackground } from '../utils/background'
+import { getApiError } from '../utils/api'
 
 export default {
   name: 'Login',
@@ -81,7 +81,7 @@ export default {
         const redirect = this.$route.query.redirect || '/'
         this.$router.replace(redirect)
       } catch (e) {
-        this.error = (e.response && e.response.data && e.response.data.error) || '登录失败'
+        this.error = getApiError(e, '登录失败')
       } finally {
         this.loading = false
       }

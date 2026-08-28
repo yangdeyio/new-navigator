@@ -1,7 +1,7 @@
 <template>
   <div class="sourceWrapper">
     <a-tabs v-model:active-key="activeKey">
-      <a-tab-pane v-for="vo in itemList" :key="vo.source">
+      <a-tab-pane v-for="vo in tabs" :key="vo.source">
         <template #tab>
           <span>
             <component :is="vo.icon" />
@@ -10,7 +10,7 @@
         </template>
         <div class="wrapper">
           <ul>
-            <li class="add-cell" :title="`添加到${vo.label}`" @click="$emit('add', activeKey)">
+            <li class="add-cell" :title="`添加到${vo.label}`" @click="$emit('add', vo.source)">
               <PlusCircleOutlined />
             </li>
             <a
@@ -48,12 +48,28 @@ import {
   RocketOutlined,
   VideoCameraOutlined,
   ThunderboltOutlined,
+  FolderOutlined,
   PlusCircleOutlined,
   CloseOutlined,
   EditOutlined
 } from '@ant-design/icons-vue'
 import { store, removeBookmark } from '../store'
 import { message } from 'ant-design-vue'
+import { getApiError } from '../utils/api'
+import { LEGACY_CATEGORIES, categoryLabel, orderedCategories } from '../utils/categories'
+
+const LEGACY_ICONS = Object.fromEntries(
+  LEGACY_CATEGORIES.map((c) => [
+    c.key,
+    {
+      document: ExperimentOutlined,
+      blog: SwitcherOutlined,
+      design: RocketOutlined,
+      video: VideoCameraOutlined,
+      entertainment: ThunderboltOutlined
+    }[c.key]
+  ])
+)
 
 export default {
   components: {
@@ -65,19 +81,30 @@ export default {
   emits: ['add', 'edit'],
   data() {
     return {
-      activeKey: 'document',
-      itemList: [
-        { label: '技术文档', source: 'document', icon: ExperimentOutlined },
-        { label: '技术博客', source: 'blog', icon: SwitcherOutlined },
-        { label: '设计', source: 'design', icon: RocketOutlined },
-        { label: '视频学习', source: 'video', icon: VideoCameraOutlined },
-        { label: '娱乐', source: 'entertainment', icon: ThunderboltOutlined }
-      ]
+      activeKey: 'document'
     }
   },
   computed: {
     list() {
       return store.bookmarks
+    },
+    tabs() {
+      return orderedCategories(store.bookmarks).map((key) => ({
+        source: key,
+        label: categoryLabel(key),
+        icon: LEGACY_ICONS[key] || FolderOutlined
+      }))
+    }
+  },
+  watch: {
+    // 当前选中的分类被删空后仍保留 key；这里保证 activeKey 始终指向存在的分类
+    tabs: {
+      immediate: true,
+      handler(tabs) {
+        if (!tabs.some((t) => t.source === this.activeKey) && tabs.length > 0) {
+          this.activeKey = tabs[0].source
+        }
+      }
     }
   },
   methods: {
@@ -86,8 +113,12 @@ export default {
       return /^https?:\/\//.test(href) ? {} : { onclick: 'return false' }
     },
     async onDelete(category, id) {
-      await removeBookmark(category, id)
-      message.success('已删除')
+      try {
+        await removeBookmark(category, id)
+        message.success('已删除')
+      } catch (e) {
+        message.error(getApiError(e, '删除失败'))
+      }
     }
   }
 }

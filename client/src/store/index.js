@@ -4,59 +4,83 @@ import axios from 'axios'
 export const store = reactive({
   ready: false,
   user: null,
-  bookmarks: {
-    document: [],
-    blog: [],
-    design: [],
-    video: [],
-    entertainment: []
-  },
+  // 分类是动态的（可来自浏览器书签导入），key 为分类名，value 为该书签列表
+  bookmarks: {},
+  loadingBookmarks: false,
+  bookmarksError: false,
   worklogs: [],
   collections: []
 })
+
+// 从 hash 路由（形如 #/collect?x=1）中解析出当前路径，供 401 跳转时携带 redirect
+function currentHashPath() {
+  return (location.hash || '#/').slice(1).split('?')[0] || '/'
+}
 
 axios.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response && err.response.status === 401 && !location.hash.startsWith('#/login')) {
       store.user = null
-      location.hash = '#/login'
+      location.hash = `#/login?redirect=${encodeURIComponent(currentHashPath())}`
     }
     return Promise.reject(err)
   }
 )
+
+// 登录/初始化时书签加载失败不应否定登录态，错误由页面通过 bookmarksError 展示
+async function safeLoadBookmarks() {
+  try {
+    await loadBookmarks()
+  } catch {
+    /* 已通过 bookmarksError 标记 */
+  }
+}
 
 export async function initAuth() {
   if (store.ready) return store.user
   try {
     const { data } = await axios.get('/api/auth/me')
     store.user = data.user
-    await loadBookmarks()
   } catch {
     store.user = null
   } finally {
     store.ready = true
   }
+  if (store.user) await safeLoadBookmarks()
   return store.user
 }
 
 export async function loadBookmarks() {
-  const { data } = await axios.get('/api/bookmarks')
-  Object.assign(store.bookmarks, data.bookmarks)
+  store.loadingBookmarks = true
+  store.bookmarksError = false
+  try {
+    const { data } = await axios.get('/api/bookmarks')
+    Object.assign(store.bookmarks, data.bookmarks)
+  } catch (e) {
+    store.bookmarksError = true
+    throw e
+  } finally {
+    store.loadingBookmarks = false
+  }
 }
 
 export async function login(username, password) {
   const { data } = await axios.post('/api/auth/login', { username, password })
   store.user = data.user
-  await loadBookmarks()
+  await safeLoadBookmarks()
   return store.user
 }
 
 export async function register(username, password) {
   const { data } = await axios.post('/api/auth/register', { username, password })
   store.user = data.user
-  await loadBookmarks()
+  await safeLoadBookmarks()
   return store.user
+}
+
+export async function changePassword(currentPassword, newPassword) {
+  await axios.post('/api/auth/password', { currentPassword, newPassword })
 }
 
 export async function logout() {
@@ -64,11 +88,16 @@ export async function logout() {
     await axios.post('/api/auth/logout')
   } finally {
     store.user = null
+    store.bookmarks = {}
+    store.worklogs = []
+    store.collections = []
+    store.bookmarksError = false
   }
 }
 
 export async function addBookmark(category, href, value) {
   const { data } = await axios.post('/api/bookmarks', { category, href, value })
+  if (!store.bookmarks[category]) store.bookmarks[category] = []
   store.bookmarks[category].unshift(data.bookmark)
   return data.bookmark
 }
@@ -87,6 +116,12 @@ export async function removeBookmark(category, id) {
   const list = store.bookmarks[category]
   const idx = list.findIndex((item) => item.id === id)
   if (idx !== -1) list.splice(idx, 1)
+}
+
+export async function importBookmarks(items) {
+  const { data } = await axios.post('/api/bookmarks/import', { bookmarks: items })
+  await loadBookmarks()
+  return data.imported
 }
 
 export async function loadWorklogs() {

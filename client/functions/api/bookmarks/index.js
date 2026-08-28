@@ -1,12 +1,5 @@
 import { json } from '../../lib/auth.js'
-
-const GROUPED_EMPTY = {
-  document: [],
-  blog: [],
-  design: [],
-  video: [],
-  entertainment: []
-}
+import { validateBookmark } from '../../lib/bookmarks.js'
 
 export async function onRequestGet(context) {
   const userId = context.data.user.sub
@@ -16,7 +9,8 @@ export async function onRequestGet(context) {
     .bind(userId)
     .all()
 
-  const grouped = { ...GROUPED_EMPTY }
+  // 分类是动态的，只返回实际存在的分组
+  const grouped = {}
   for (const row of results) {
     if (!(row.category in grouped)) grouped[row.category] = []
     grouped[row.category].push({ id: row.id, href: row.href, value: row.value })
@@ -39,9 +33,8 @@ export async function onRequestPost(context) {
   const href = String(body.href || '').trim()
   const value = String(body.value || '').trim()
 
-  if (!category || category.length > 32) return json({ error: '分类无效' }, 400)
-  if (!/^https?:\/\/.+/.test(href) || href.length > 2048) return json({ error: '网址无效' }, 400)
-  if (!value || value.length > 50) return json({ error: '名称需为 1-50 个字符' }, 400)
+  const error = validateBookmark({ category, href, value })
+  if (error) return json({ error }, 400)
 
   const row = await context.env.DB
     .prepare(
