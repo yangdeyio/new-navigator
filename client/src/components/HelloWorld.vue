@@ -1,19 +1,14 @@
 <template>
   <div class="hello">
-    <div class="add-item-container" @click="onAdd()">
-      <div class="add-item">
-        <div class="add">
-          <PlusOutlined />
-        </div>
+    <div class="nav-panel">
+      <Search class="search" />
+      <a-spin :spinning="spinning" wrapper-class-name="bookmarks-spin">
+        <SourceView @add="onAdd" @edit="onEdit" />
+      </a-spin>
+      <div v-if="bookmarksError" class="load-error">
+        <span>书签加载失败</span>
+        <a-button size="small" @click="retryLoad">重试</a-button>
       </div>
-    </div>
-    <Search class="search" />
-    <a-spin :spinning="spinning" wrapper-class-name="bookmarks-spin">
-      <SourceView @add="onAdd" @edit="onEdit" />
-    </a-spin>
-    <div v-if="bookmarksError" class="load-error">
-      <span>书签加载失败</span>
-      <a-button size="small" @click="retryLoad">重试</a-button>
     </div>
     <div class="io-actions">
       <a-tooltip title="导出书签">
@@ -29,6 +24,13 @@
         style="display: none"
         @change="onImportFile"
       />
+    </div>
+    <div class="add-item-container" @click="onAdd()">
+      <div class="add-item">
+        <div class="add">
+          <PlusOutlined />
+        </div>
+      </div>
     </div>
     <div v-show="visible" class="mask">
       <div class="edit">
@@ -271,7 +273,7 @@ export default defineComponent({
 <style lang="scss" scoped>
   .hello {
     height: 100vh;
-    padding-top: 40px;
+    padding: 36px 24px 36px;
     position: relative;
     display: flex;
     flex-direction: column;
@@ -279,6 +281,48 @@ export default defineComponent({
     overflow: hidden;
     box-sizing: border-box;
 
+  .nav-panel {
+    width: 100%;
+    max-width: 1120px;
+    height: 100%;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 24px 0 8px;
+    box-sizing: border-box;
+
+    .search {
+      flex-shrink: 0;
+      margin-bottom: 10px;
+    }
+
+    :deep(.bookmarks-spin) {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    :deep(.bookmarks-spin .ant-spin-container) {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .load-error {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: #ff4d4f;
+      font-size: 14px;
+      padding: 8px 0 12px;
+    }
+  }
 
   .add-item-container {
     position: fixed;
@@ -307,17 +351,17 @@ export default defineComponent({
         box-shadow: 0 5px 14px rgba(0, 0, 0, 0.2);
         width: 100%;
         height: 100%;
-        background: rgba(255, 255, 255, 0.85);
+        background: #1890ff;
         display: flex;
         justify-content: center;
         align-items: center;
         font-size: 30px;
-        color: #1890ff;
+        color: #ffffff;
         animation: add-transition infinite 1.5s;
 
         &:hover {
           animation: none;
-          color: #4096ff;
+          background: #4096ff;
         }
       }
     }
@@ -330,15 +374,19 @@ export default defineComponent({
     z-index: 10;
     display: flex;
     gap: 8px;
-  }
 
-  .load-error {
-    margin-top: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 14px;
+    :deep(.ant-btn) {
+      border-radius: 8px;
+      border-color: #e8e8e8;
+      color: rgba(0, 0, 0, 0.65);
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+      &:hover {
+        color: #1890ff;
+        border-color: #1890ff;
+      }
+    }
   }
 
   .mask {
@@ -354,7 +402,7 @@ export default defineComponent({
       width: 400px;
       max-width: 92vw;
       background: #ffffff;
-      border-radius: 16px;
+      border-radius: 12px;
       padding: 20px 24px 24px;
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
 
@@ -380,7 +428,7 @@ export default defineComponent({
         .selected {
           flex: 1;
           border: 1px solid #d9d9d9;
-          border-radius: 6px;
+          border-radius: 8px;
           height: 34px;
           padding: 0 10px;
           font-size: 14px;

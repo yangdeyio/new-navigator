@@ -1,7 +1,9 @@
 <template>
   <div id="app">
     <router-view v-if="isAuthPage" />
-    <a-layout v-else style="min-height: 100vh;">
+    <template v-else>
+      <AppBackground />
+      <a-layout style="min-height: 100vh; background: transparent;">
       <a-layout-sider
         v-model:collapsed="collapsed"
         collapsible
@@ -28,10 +30,10 @@
             <EditOutlined />
             <span>工作日志</span>
           </a-menu-item>
-          <a-menu-item key="/message">
+          <!-- <a-menu-item key="/message">
             <CommentOutlined />
             <span>留言板</span>
-          </a-menu-item>
+          </a-menu-item> -->
         </a-menu>
         <div class="user-box" :class="{ collapsed }">
           <span class="avatar">{{ initial }}</span>
@@ -45,19 +47,20 @@
           <LogoutOutlined v-if="!collapsed" class="action" title="退出登录" @click="onLogout" />
         </div>
       </a-layout-sider>
-      <a-layout-content class="content" :style="contentStyle">
+      <a-layout-content class="content" style="background: transparent;">
         <router-view />
       </a-layout-content>
-    </a-layout>
+      </a-layout>
+    </template>
     <ChangePasswordModal :open="pwVisible" @close="pwVisible = false" />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { HomeOutlined, StarOutlined, EditOutlined, CommentOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons-vue'
+import { HomeOutlined, StarOutlined, EditOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons-vue'
 import { store, logout } from './store'
-import { randomBackground } from './utils/background'
+import AppBackground from './components/AppBackground.vue'
 import ChangePasswordModal from './components/ChangePasswordModal.vue'
 
 export default defineComponent({
@@ -66,26 +69,20 @@ export default defineComponent({
     HomeOutlined,
     StarOutlined,
     EditOutlined,
-    CommentOutlined,
     LogoutOutlined,
     SettingOutlined,
+    AppBackground,
     ChangePasswordModal
   },
   data() {
     return {
       collapsed: false,
-      pwVisible: false,
-      bgUrl: randomBackground()
+      pwVisible: false
     }
   },
   computed: {
     isAuthPage() {
       return !!this.$route.meta.public
-    },
-    contentStyle(): Record<string, string> {
-      return {
-        backgroundImage: `linear-gradient(135deg, rgba(24, 90, 157, 0.82), rgba(33, 26, 82, 0.86)), url('${this.bgUrl}')`
-      }
     },
     username() {
       return (store.user && store.user.username) || ''
@@ -175,9 +172,6 @@ export default defineComponent({
   }
 
   .content {
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
     min-height: 100vh;
   }
 }

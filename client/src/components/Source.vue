@@ -11,7 +11,8 @@
         <div class="wrapper">
           <ul>
             <li class="add-cell" :title="`添加到${vo.label}`" @click="$emit('add', vo.source)">
-              <PlusCircleOutlined />
+              <PlusOutlined class="add-plus" />
+              <span class="add-label">添加</span>
             </li>
             <a
               v-for="item in list[vo.source]"
@@ -22,7 +23,7 @@
             >
               <Favicon :href="item.href" />
               <div class="value-text">{{ item.value }}</div>
-              <div class="ops" @click.stop>
+              <div class="ops" @click.stop.prevent>
                 <EditOutlined class="op edit" title="编辑" @click="$emit('edit', { category: vo.source, item })" />
                 <a-popconfirm
                   title="确定删除该书签？"
@@ -50,7 +51,7 @@ import {
   VideoCameraOutlined,
   ThunderboltOutlined,
   FolderOutlined,
-  PlusCircleOutlined,
+  PlusOutlined,
   CloseOutlined,
   EditOutlined
 } from '@ant-design/icons-vue'
@@ -82,7 +83,7 @@ const LEGACY_ICONS = Object.fromEntries(
 export default defineComponent({
   components: {
     Favicon,
-    PlusCircleOutlined,
+    PlusOutlined,
     CloseOutlined,
     EditOutlined
   },
@@ -137,11 +138,11 @@ a {
 }
 .sourceWrapper {
   position: relative;
-  width: 680px;
-  max-width: 96vw;
+  width: 100%;
+  max-width: 1120px;
+  padding: 0 24px;
+  box-sizing: border-box;
   margin: 0 auto;
-  border-radius: 8px;
-  margin-top: 30px;
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -150,76 +151,112 @@ a {
   .wrapper {
     ul {
       width: 100%;
-      display: flex;
-      flex-wrap: wrap;
-      li,
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
       a {
-        width: 120px;
-        min-height: 36px;
-        background: rgba(255, 255, 255, 0.72);
+        min-height: 46px;
+        background: #ffffff;
         font-weight: 500;
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        padding: 0 8px;
-        margin: 4px;
-        border-radius: 8px;
+        padding: 0 42px 0 10px;
+        border-radius: 10px;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.2s ease;
         color: rgba(0, 0, 0, 0.72);
         position: relative;
-        overflow: hidden;
+        border: 1px solid #ececec;
+        box-sizing: border-box;
 
         .value-text {
+          flex: 1;
+          min-width: 0;
           line-height: 30px;
-          max-width: 78px;
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;
         }
 
         .ops {
-          display: none;
           position: absolute;
-          inset: 0;
-          background: rgba(255, 255, 255, 0.92);
+          right: 8px;
+          top: 50%;
+          transform: translateY(-50%);
+          display: flex;
           align-items: center;
-          justify-content: center;
-          gap: 10px;
+          gap: 6px;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.2s ease;
 
           .op {
-            font-size: 15px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 14px;
             color: rgba(0, 0, 0, 0.45);
             cursor: pointer;
-            padding: 2px;
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
 
             &.edit:hover {
               color: #1890ff;
+              background: rgba(24, 144, 255, 0.12);
+              border-color: rgba(24, 144, 255, 0.3);
             }
             &.del:hover {
               color: #ff4d4f;
+              background: rgba(255, 77, 79, 0.12);
+              border-color: rgba(255, 77, 79, 0.3);
             }
           }
         }
 
         &:hover {
-          background: #ffffff;
-          box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+          border-color: #1890ff;
+          box-shadow: 0 4px 12px rgba(24, 144, 255, 0.12);
+          transform: translateY(-1px);
 
           .ops {
-            display: flex;
+            opacity: 1;
+            pointer-events: auto;
           }
         }
       }
 
       .add-cell {
+        min-height: 46px;
+        display: flex;
+        align-items: center;
         justify-content: center;
-        font-size: 20px;
-        color: rgba(0, 0, 0, 0.35);
-        background: rgba(255, 255, 255, 0.4);
+        gap: 6px;
+        color: rgba(0, 0, 0, 0.4);
+        background: #f7f8fa;
+        border: 1px dashed #d9d9d9;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+
+        .add-plus {
+          font-size: 16px;
+        }
+        .add-label {
+          font-size: 13px;
+          font-weight: 500;
+        }
 
         &:hover {
           color: #1890ff;
+          border-color: #1890ff;
+          border-style: solid;
+          background: rgba(24, 144, 255, 0.06);
         }
       }
     }
@@ -233,11 +270,20 @@ a {
   }
   :deep(.ant-tabs-nav) {
     flex-shrink: 0;
+    margin-bottom: 12px;
   }
   :deep(.ant-tabs-content-holder) {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    padding: 0;
+  }
+  :deep(.ant-tabs-content) {
+    padding: 6px 0 0;
+  }
+  // 卡片网格第一行悬浮上移时，预留顶部空间，避免被滚动容器裁切上边框
+  .wrapper {
+    padding-top: 4px;
   }
   :deep(.ant-tabs-nav-scroll) {
     display: flex;
@@ -246,9 +292,11 @@ a {
   }
   :deep(.ant-tabs-tab) {
     font-weight: 500;
-    color: #ffffff;
+    color: rgba(0, 0, 0, 0.65);
     font-size: 14px;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+  :deep(.ant-tabs-tab-active .ant-tabs-tab-btn) {
+    color: #1890ff;
   }
 }
 </style>

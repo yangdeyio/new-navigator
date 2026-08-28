@@ -1,5 +1,6 @@
 <template>
-  <div class="auth-page" :style="bgStyle">
+  <div class="auth-page">
+    <AppBackground />
     <a-card class="auth-card" :bordered="false">
       <div class="logo">一览</div>
       <div class="subtitle">创建账号 · 开启你的导航站</div>
@@ -17,26 +18,19 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { register } from '../store'
-import { randomBackground } from '../utils/background'
+import AppBackground from './AppBackground.vue'
 import { getApiError } from '../utils/api'
 
 export default defineComponent({
   name: 'Register',
+  components: { AppBackground },
   data() {
     return {
       username: '',
       password: '',
       confirmed: '',
       loading: false,
-      error: '',
-      bgUrl: randomBackground()
-    }
-  },
-  computed: {
-    bgStyle() {
-      return {
-        backgroundImage: `linear-gradient(135deg, rgba(24, 90, 157, 0.82), rgba(33, 26, 82, 0.86)), url('${this.bgUrl}')`
-      }
+      error: ''
     }
   },
   methods: {
@@ -79,9 +73,6 @@ export default defineComponent({
   display: flex;
   justify-content: center;
   align-items: center;
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
 }
 
 .auth-card {

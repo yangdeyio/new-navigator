@@ -73,22 +73,28 @@ export default defineComponent({
   width: 16px;
   height: 16px;
   flex-shrink: 0;
+  margin-right: 8px;
+  border-radius: 5px;
+  overflow: hidden;
+  // 淡灰底：图片未加载/加载失败 + 透明图片统一衬底，形状一致
+  background: #f0f2f5;
+  box-sizing: border-box;
 }
 .web-icon {
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-  margin-right: 4px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .fallback,
 .placeholder {
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
   color: #fff;
   font-size: 10px;
   line-height: 16px;
   text-align: center;
-  margin-right: 4px;
+  box-sizing: border-box;
 }
 </style>

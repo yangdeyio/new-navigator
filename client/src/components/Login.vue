@@ -1,5 +1,6 @@
 <template>
-  <div class="login-page" :style="bgStyle">
+  <div class="login-page">
+    <AppBackground />
     <a-card class="login-card" :bordered="false">
       <div class="logo">一览</div>
       <div class="subtitle">个人导航站 · 请登录</div>
@@ -36,26 +37,19 @@
 import { defineComponent } from 'vue'
 import axios from 'axios'
 import { store, login } from '../store'
-import { randomBackground } from '../utils/background'
+import AppBackground from './AppBackground.vue'
 import { getApiError } from '../utils/api'
 
 export default defineComponent({
   name: 'Login',
+  components: { AppBackground },
   data() {
     return {
       username: '',
       password: '',
       loading: false,
       error: '',
-      allowRegister: false,
-      bgUrl: randomBackground()
-    }
-  },
-  computed: {
-    bgStyle() {
-      return {
-        backgroundImage: `linear-gradient(135deg, rgba(24, 90, 157, 0.82), rgba(33, 26, 82, 0.86)), url('${this.bgUrl}')`
-      }
+      allowRegister: false
     }
   },
   async mounted() {
@@ -97,9 +91,6 @@ export default defineComponent({
   display: flex;
   justify-content: center;
   align-items: center;
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
 }
 
 .login-card {

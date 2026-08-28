@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import source from '../src/Data/source.js'
-import { hashPassword } from '../functions/lib/auth.js'
+import { hashPassword } from '../functions/lib/auth.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
