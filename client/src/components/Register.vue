@@ -1,29 +1,51 @@
 <template>
   <div class="auth-page">
     <AppBackground />
-    <a-card class="auth-card" :bordered="false">
+    <div class="auth-card app-panel">
       <div class="logo">一览</div>
       <div class="subtitle">创建账号 · 开启你的导航站</div>
-      <input v-model="username" class="field" type="text" placeholder="用户名（2-24 位字母数字下划线）" @keyup.enter="submit" />
-      <input v-model="password" class="field" type="password" placeholder="密码（至少 8 位）" @keyup.enter="submit" />
-      <input v-model="confirmed" class="field" type="password" placeholder="确认密码" @keyup.enter="submit" />
+      <a-input
+        v-model:value="username"
+        size="large"
+        placeholder="用户名（2-24 位字母数字下划线）"
+        @press-enter="submit"
+      >
+        <template #prefix><UserOutlined /></template>
+      </a-input>
+      <a-input-password
+        v-model:value="password"
+        size="large"
+        placeholder="密码（至少 8 位）"
+        @press-enter="submit"
+      >
+        <template #prefix><LockOutlined /></template>
+      </a-input-password>
+      <a-input-password
+        v-model:value="confirmed"
+        size="large"
+        placeholder="确认密码"
+        @press-enter="submit"
+      >
+        <template #prefix><LockOutlined /></template>
+      </a-input-password>
       <div class="error">{{ error }}</div>
-      <a-button class="submit" type="primary" block :loading="loading" @click="submit">注册</a-button>
+      <a-button class="submit" type="primary" size="large" block :loading="loading" @click="submit">注册</a-button>
       <div class="hint">
         <router-link class="link" to="/login">已有账号？去登录</router-link>
       </div>
-    </a-card>
+    </div>
   </div>
 </template>
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
 import { register } from '../store'
 import AppBackground from './AppBackground.vue'
 import { getApiError } from '../utils/api'
 
 export default defineComponent({
   name: 'Register',
-  components: { AppBackground },
+  components: { AppBackground, UserOutlined, LockOutlined },
   data() {
     return {
       username: '',
@@ -73,58 +95,56 @@ export default defineComponent({
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 .auth-card {
   width: 360px;
-  border-radius: 12px;
+  max-width: 92vw;
+  padding: 32px 28px 24px;
+  box-sizing: border-box;
+
+  :deep(.ant-input-affix-wrapper) {
+    margin-bottom: 12px;
+  }
 
   .logo {
-    font-size: 24px;
-    font-weight: 600;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 4px;
     text-align: center;
-    margin-top: 8px;
+    background: linear-gradient(120deg, var(--accent), var(--accent-hover));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   .subtitle {
     text-align: center;
-    color: rgba(0, 0, 0, 0.45);
-    margin: 8px 0 20px;
-  }
-
-  .field {
-    width: 100%;
-    height: 38px;
-    border: 1px solid #d9d9d9;
-    border-radius: 6px;
-    padding: 0 10px;
-    margin-bottom: 12px;
-    box-sizing: border-box;
-
-    &:focus {
-      outline: none;
-      border-color: #1890ff;
-    }
+    color: var(--text-3);
+    margin: 8px 0 24px;
+    font-size: 13px;
   }
 
   .error {
     min-height: 20px;
     color: #ff4d4f;
     font-size: 12px;
-    margin-bottom: 4px;
+    margin: 4px 0;
   }
 
   .submit {
-    margin-bottom: 12px;
+    margin: 8px 0 16px;
   }
 
   .hint {
     text-align: center;
-    color: rgba(0, 0, 0, 0.45);
+    color: var(--text-3);
     font-size: 12px;
 
     .link {
-      color: #1890ff;
+      color: var(--accent);
     }
   }
 }

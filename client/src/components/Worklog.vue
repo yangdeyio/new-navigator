@@ -1,6 +1,6 @@
 <template>
-  <div class="worklog-page">
-    <div class="panel">
+  <div class="worklog-page page-container">
+    <div class="panel app-panel">
       <div class="composer">
         <a-textarea
           v-model:value="content"
@@ -125,15 +125,10 @@ export default defineComponent({
 </script>
 <style lang="scss" scoped>
 .worklog-page {
-  max-width: 720px;
-  margin: 0 auto;
-  padding-top: 48px;
-  box-sizing: border-box;
+  padding-top: 36px;
 }
 
 .panel {
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 12px;
   padding: 24px;
 }
 
@@ -147,7 +142,7 @@ export default defineComponent({
     justify-content: space-between;
 
     .hint {
-      color: rgba(0, 0, 0, 0.35);
+      color: var(--text-3);
       font-size: 13px;
     }
   }
@@ -157,7 +152,7 @@ export default defineComponent({
   margin: 8px 0 4px;
 
   .count {
-    color: rgba(0, 0, 0, 0.45);
+    color: var(--text-2);
     font-size: 13px;
   }
 }
@@ -172,21 +167,21 @@ export default defineComponent({
     flex: 1;
 
     .text {
-      color: rgba(0, 0, 0, 0.85);
+      color: var(--text-1);
       white-space: pre-wrap;
       word-break: break-word;
     }
 
     .time {
       margin-top: 4px;
-      color: rgba(0, 0, 0, 0.35);
+      color: var(--text-3);
       font-size: 12px;
     }
   }
 
   .del {
     flex-shrink: 0;
-    color: rgba(0, 0, 0, 0.35);
+    color: var(--text-3);
 
     &:hover {
       color: #ff4d4f;
@@ -195,7 +190,7 @@ export default defineComponent({
 
   &.done {
     .text {
-      color: rgba(0, 0, 0, 0.4);
+      color: var(--text-3);
       text-decoration: line-through;
     }
   }

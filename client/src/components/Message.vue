@@ -1,6 +1,6 @@
 <template>
-  <div class="msg-page">
-    <div class="panel">
+  <div class="msg-page page-container">
+    <div class="panel app-panel">
       <div class="composer">
         <a-textarea
           v-model:value="content"
@@ -9,7 +9,7 @@
           placeholder="说点什么…"
         />
         <div class="composer-actions">
-          <span class="me">{{ username }}</span>
+          <span class="me">以 {{ username }} 身份发表</span>
           <a-button type="primary" :loading="posting" @click="submit">发表</a-button>
         </div>
       </div>
@@ -98,15 +98,11 @@ export default defineComponent({
 </script>
 <style lang="scss" scoped>
 .msg-page {
-  max-width: 640px;
-  margin: 0 auto;
-  padding-top: 60px;
+  padding-top: 36px;
 }
 
 .panel {
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 8px;
-  padding: 20px;
+  padding: 24px;
 }
 
 .composer {
@@ -119,24 +115,14 @@ export default defineComponent({
     justify-content: space-between;
 
     .me {
-      color: rgba(0, 0, 0, 0.45);
+      color: var(--text-3);
       font-size: 13px;
-
-      &::before {
-        content: '以 ';
-        color: rgba(0, 0, 0, 0.35);
-      }
-
-      &::after {
-        content: ' 身份发表';
-        color: rgba(0, 0, 0, 0.35);
-      }
     }
   }
 }
 
 .time {
-  color: rgba(0, 0, 0, 0.35);
+  color: var(--text-3);
   font-size: 12px;
 }
 </style>

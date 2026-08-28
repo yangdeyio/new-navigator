@@ -1,5 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import HelloWorld from '../components/HelloWorld.vue'
+import Navigator from '../components/Navigator.vue'
 import Collect from '../components/Collect.vue'
 import Worklog from '../components/Worklog.vue'
 import Message from '../components/Message.vue'
@@ -13,7 +13,7 @@ const router = createRouter({
     {
       name: 'source',
       path: '/',
-      component: HelloWorld
+      component: Navigator
     },
     {
       path: '/collect',

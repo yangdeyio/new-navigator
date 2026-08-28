@@ -1,27 +1,30 @@
 <template>
   <div class="login-page">
     <AppBackground />
-    <a-card class="login-card" :bordered="false">
+    <div class="auth-card app-panel">
       <div class="logo">一览</div>
       <div class="subtitle">个人导航站 · 请登录</div>
-      <input
-        v-model="username"
-        class="field"
-        type="text"
+      <a-input
+        v-model:value="username"
+        size="large"
         placeholder="用户名"
-        @keypress.enter="submit"
-      />
-      <input
-        v-model="password"
-        class="field"
-        type="password"
+        @press-enter="submit"
+      >
+        <template #prefix><UserOutlined /></template>
+      </a-input>
+      <a-input-password
+        v-model:value="password"
+        size="large"
         placeholder="密码"
-        @keypress.enter="submit"
-      />
+        @press-enter="submit"
+      >
+        <template #prefix><LockOutlined /></template>
+      </a-input-password>
       <div class="error">{{ error }}</div>
       <a-button
         class="submit"
         type="primary"
+        size="large"
         block
         :loading="loading"
         @click="submit"
@@ -30,19 +33,20 @@
         <span v-if="!allowRegister">账号由管理员分配，暂不开放注册</span>
         <router-link v-else class="link" to="/register">没有账号？立即注册</router-link>
       </div>
-    </a-card>
+    </div>
   </div>
 </template>
 <script lang="ts">
 import { defineComponent } from 'vue'
 import axios from 'axios'
+import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
 import { store, login } from '../store'
 import AppBackground from './AppBackground.vue'
 import { getApiError } from '../utils/api'
 
 export default defineComponent({
   name: 'Login',
-  components: { AppBackground },
+  components: { AppBackground, UserOutlined, LockOutlined },
   data() {
     return {
       username: '',
@@ -91,58 +95,56 @@ export default defineComponent({
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
-.login-card {
+.auth-card {
   width: 360px;
-  border-radius: 12px;
+  max-width: 92vw;
+  padding: 32px 28px 24px;
+  box-sizing: border-box;
+
+  :deep(.ant-input-affix-wrapper) {
+    margin-bottom: 12px;
+  }
 
   .logo {
-    font-size: 24px;
-    font-weight: 600;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 4px;
     text-align: center;
-    margin-top: 8px;
+    background: linear-gradient(120deg, var(--accent), var(--accent-hover));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   .subtitle {
     text-align: center;
-    color: rgba(0, 0, 0, 0.45);
-    margin: 8px 0 20px;
-  }
-
-  .field {
-    width: 100%;
-    height: 36px;
-    border: 1px solid #d9d9d9;
-    border-radius: 6px;
-    padding: 0 10px;
-    margin-bottom: 12px;
-    box-sizing: border-box;
-
-    &:focus {
-      outline: none;
-      border-color: #1890ff;
-    }
+    color: var(--text-3);
+    margin: 8px 0 24px;
+    font-size: 13px;
   }
 
   .error {
     min-height: 20px;
     color: #ff4d4f;
     font-size: 12px;
-    margin-bottom: 4px;
+    margin: 4px 0;
   }
 
   .submit {
-    margin-bottom: 12px;
+    margin: 8px 0 16px;
   }
 
   .hint {
     text-align: center;
-    color: rgba(0, 0, 0, 0.35);
+    color: var(--text-3);
     font-size: 12px;
 
     .link {
-      color: #1890ff;
+      color: var(--accent);
     }
   }
 }

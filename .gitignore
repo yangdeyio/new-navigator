@@ -29,3 +29,5 @@ client/dist/
 .dev.vars
 .wrangler/
 client/migrations/0002_seed.sql
+# zcode local session state
+.zcode/

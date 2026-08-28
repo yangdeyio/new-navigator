@@ -1,6 +1,10 @@
 <template>
-  <span class="web-icon-wrap">
-    <span v-if="failed" class="web-icon fallback" :style="{ background: color }">
+  <span class="web-icon-wrap" :style="wrapStyle">
+    <span
+      v-if="failed"
+      class="web-icon fallback"
+      :style="{ background: color, lineHeight: `${size}px`, fontSize: `${Math.max(10, Math.round(size * 0.45))}px` }"
+    >
       {{ letter }}
     </span>
     <img
@@ -18,13 +22,17 @@
 import { defineComponent } from 'vue'
 import { firstLetter } from '../utils/format'
 
-const PALETTE = ['#1890ff', '#722ed1', '#13c2c2', '#fa8c16', '#eb2f96', '#a0d911', '#f5222d']
+const PALETTE = ['#4353e9', '#722ed1', '#13c2c2', '#fa8c16', '#eb2f96', '#a0d911', '#f5222d']
 
 export default defineComponent({
   props: {
     href: {
       type: String,
       default: ''
+    },
+    size: {
+      type: Number,
+      default: 16
     }
   },
   data() {
@@ -33,12 +41,18 @@ export default defineComponent({
       icon: '',
       loaded: false,
       failed: false,
-      color: '#1890ff'
+      color: '#4353e9'
     }
   },
   computed: {
     letter() {
       return firstLetter(this.host || this.href)
+    },
+    wrapStyle(): Record<string, string> {
+      return {
+        width: `${this.size}px`,
+        height: `${this.size}px`
+      }
     }
   },
   created() {

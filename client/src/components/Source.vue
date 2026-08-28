@@ -1,48 +1,41 @@
 <template>
   <div class="sourceWrapper">
-    <a-tabs v-model:active-key="activeKey">
-      <a-tab-pane v-for="vo in tabs" :key="vo.source">
-        <template #tab>
-          <span>
-            <component :is="vo.icon" />
-            {{ vo.label }}
-          </span>
-        </template>
-        <div class="wrapper">
-          <ul>
-            <li class="add-cell" :title="`添加到${vo.label}`" @click="$emit('add', vo.source)">
-              <PlusOutlined class="add-plus" />
-              <span class="add-label">添加</span>
-            </li>
-            <a
-              v-for="item in list[vo.source]"
-              :key="item.id"
-              :href="item.href"
-              target="_blank"
-              v-bind="anchorAttrs(item.href)"
+    <div class="cat-bar">
+      <a-segmented v-model:value="activeKey" :options="segmentedOptions" class="cat-seg" />
+    </div>
+    <div class="wrapper">
+      <ul>
+        <li class="add-cell" :title="`添加到${activeLabel}`" @click="$emit('add', activeKey)">
+          <PlusOutlined class="add-plus" />
+          <span class="add-label">添加</span>
+        </li>
+        <a
+          v-for="item in list[activeKey]"
+          :key="item.id"
+          :href="item.href"
+          target="_blank"
+          v-bind="anchorAttrs(item.href)"
+        >
+          <Favicon :href="item.href" :size="32" class="card-icon" />
+          <div class="value-text">{{ item.value }}</div>
+          <div class="ops" @click.stop.prevent>
+            <EditOutlined class="op edit" title="编辑" @click="$emit('edit', { category: activeKey, item })" />
+            <a-popconfirm
+              title="确定删除该书签？"
+              ok-text="删除"
+              cancel-text="取消"
+              @confirm="onDelete(activeKey, item.id)"
             >
-              <Favicon :href="item.href" />
-              <div class="value-text">{{ item.value }}</div>
-              <div class="ops" @click.stop.prevent>
-                <EditOutlined class="op edit" title="编辑" @click="$emit('edit', { category: vo.source, item })" />
-                <a-popconfirm
-                  title="确定删除该书签？"
-                  ok-text="删除"
-                  cancel-text="取消"
-                  @confirm="onDelete(vo.source, item.id)"
-                >
-                  <CloseOutlined class="op del" title="删除" />
-                </a-popconfirm>
-              </div>
-            </a>
-          </ul>
-        </div>
-      </a-tab-pane>
-    </a-tabs>
+              <CloseOutlined class="op del" title="删除" />
+            </a-popconfirm>
+          </div>
+        </a>
+      </ul>
+    </div>
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, type Component } from 'vue'
+import { defineComponent, h, type Component } from 'vue'
 import Favicon from './Favicon.vue'
 import {
   ExperimentOutlined,
@@ -58,7 +51,7 @@ import {
 import { store, removeBookmark } from '../store'
 import { message } from 'ant-design-vue'
 import { getApiError } from '../utils/api'
-import { LEGACY_CATEGORIES, categoryLabel, orderedCategories } from '../utils/categories'
+import { categoryLabel, orderedCategories } from '../utils/categories'
 import type { BookmarkCategory } from '../types'
 
 interface TabDef {
@@ -67,18 +60,13 @@ interface TabDef {
   icon: Component
 }
 
-const LEGACY_ICONS = Object.fromEntries(
-  LEGACY_CATEGORIES.map((c) => [
-    c.key,
-    {
-      document: ExperimentOutlined,
-      blog: SwitcherOutlined,
-      design: RocketOutlined,
-      video: VideoCameraOutlined,
-      entertainment: ThunderboltOutlined
-    }[c.key]
-  ])
-)
+const LEGACY_ICONS: Partial<Record<BookmarkCategory, Component>> = {
+  document: ExperimentOutlined,
+  blog: SwitcherOutlined,
+  design: RocketOutlined,
+  video: VideoCameraOutlined,
+  entertainment: ThunderboltOutlined
+}
 
 export default defineComponent({
   components: {
@@ -90,7 +78,7 @@ export default defineComponent({
   emits: ['add', 'edit'],
   data() {
     return {
-      activeKey: 'document'
+      activeKey: 'document' as BookmarkCategory
     }
   },
   computed: {
@@ -102,6 +90,17 @@ export default defineComponent({
         source: key,
         label: categoryLabel(key),
         icon: LEGACY_ICONS[key] || FolderOutlined
+      }))
+    },
+    activeLabel(): string {
+      const tab = this.tabs.find((t) => t.source === this.activeKey)
+      return tab ? tab.label : this.activeKey
+    },
+    segmentedOptions() {
+      // label 传 VNode,让分类项带图标
+      return this.tabs.map((t) => ({
+        value: t.source,
+        label: h('span', { class: 'seg-item' }, [h(t.icon), h('span', { class: 'seg-text' }, t.label)])
       }))
     }
   },
@@ -139,89 +138,122 @@ a {
 .sourceWrapper {
   position: relative;
   width: 100%;
-  max-width: 1120px;
-  padding: 0 24px;
-  box-sizing: border-box;
-  margin: 0 auto;
   flex: 1;
   min-height: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+
+  .cat-bar {
+    flex-shrink: 0;
+    margin-bottom: 14px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+
+    :deep(.cat-seg.ant-segmented) {
+      max-width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    :deep(.seg-item) {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 4px;
+    }
+  }
+
   .wrapper {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 4px 2px 16px;
+
     ul {
       width: 100%;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 10px;
+      gap: 12px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+
       a {
-        min-height: 46px;
-        background: #ffffff;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        padding: 0 42px 0 10px;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        color: rgba(0, 0, 0, 0.72);
         position: relative;
-        border: 1px solid #ececec;
+        min-height: 92px;
+        background: var(--surface-2);
+        border: 1px solid var(--surface-2-border);
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 14px 10px 12px;
+        cursor: pointer;
         box-sizing: border-box;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+        .card-icon {
+          margin-right: 0;
+        }
 
         .value-text {
-          flex: 1;
-          min-width: 0;
-          line-height: 30px;
+          max-width: 100%;
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--text-1);
+          line-height: 18px;
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;
+          padding: 0 4px;
         }
 
         .ops {
           position: absolute;
-          right: 8px;
-          top: 50%;
-          transform: translateY(-50%);
+          right: 6px;
+          top: 6px;
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 4px;
           opacity: 0;
           pointer-events: none;
           transition: opacity 0.2s ease;
 
           .op {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            font-size: 14px;
-            color: rgba(0, 0, 0, 0.45);
+            font-size: 12px;
+            color: var(--text-3);
             cursor: pointer;
-            background: rgba(0, 0, 0, 0.04);
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+            background: var(--surface-2-hover);
+            transition: color 0.2s ease, background 0.2s ease;
 
             &.edit:hover {
-              color: #1890ff;
-              background: rgba(24, 144, 255, 0.12);
-              border-color: rgba(24, 144, 255, 0.3);
+              color: var(--accent);
+              background: var(--accent-weak);
             }
             &.del:hover {
               color: #ff4d4f;
               background: rgba(255, 77, 79, 0.12);
-              border-color: rgba(255, 77, 79, 0.3);
             }
           }
         }
 
         &:hover {
-          border-color: #1890ff;
-          box-shadow: 0 4px 12px rgba(24, 144, 255, 0.12);
-          transform: translateY(-1px);
+          border-color: var(--accent);
+          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+          transform: translateY(-2px);
 
           .ops {
             opacity: 1;
@@ -231,21 +263,22 @@ a {
       }
 
       .add-cell {
-        min-height: 46px;
+        min-height: 92px;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        color: rgba(0, 0, 0, 0.4);
-        background: #f7f8fa;
-        border: 1px dashed #d9d9d9;
-        border-radius: 10px;
+        gap: 8px;
+        color: var(--text-3);
+        background: transparent;
+        border: 1px dashed var(--surface-2-border);
+        border-radius: 12px;
         cursor: pointer;
         transition: all 0.2s ease;
         box-sizing: border-box;
 
         .add-plus {
-          font-size: 16px;
+          font-size: 18px;
         }
         .add-label {
           font-size: 13px;
@@ -253,50 +286,13 @@ a {
         }
 
         &:hover {
-          color: #1890ff;
-          border-color: #1890ff;
+          color: var(--accent);
+          border-color: var(--accent);
           border-style: solid;
-          background: rgba(24, 144, 255, 0.06);
+          background: var(--accent-weak);
         }
       }
     }
-  }
-
-  :deep(.ant-tabs) {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  :deep(.ant-tabs-nav) {
-    flex-shrink: 0;
-    margin-bottom: 12px;
-  }
-  :deep(.ant-tabs-content-holder) {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding: 0;
-  }
-  :deep(.ant-tabs-content) {
-    padding: 6px 0 0;
-  }
-  // 卡片网格第一行悬浮上移时，预留顶部空间，避免被滚动容器裁切上边框
-  .wrapper {
-    padding-top: 4px;
-  }
-  :deep(.ant-tabs-nav-scroll) {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  :deep(.ant-tabs-tab) {
-    font-weight: 500;
-    color: rgba(0, 0, 0, 0.65);
-    font-size: 14px;
-  }
-  :deep(.ant-tabs-tab-active .ant-tabs-tab-btn) {
-    color: #1890ff;
   }
 }
 </style>
