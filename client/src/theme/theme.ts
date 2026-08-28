@@ -18,8 +18,8 @@ export const antdTheme = computed<ThemeConfig>(() => {
       algorithm: antdThemeLib.darkAlgorithm,
       token: {
         ...SHARED_TOKENS,
-        colorPrimary: '#6c7dff',
-        colorInfo: '#6c7dff',
+        colorPrimary: '#7d8bff',
+        colorInfo: '#7d8bff',
         colorBgBase: '#131832'
       }
     }

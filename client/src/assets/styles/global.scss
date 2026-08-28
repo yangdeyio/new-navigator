@@ -38,25 +38,25 @@
 html[data-theme='dark'] {
   color-scheme: dark;
 
-  --accent: #6c7dff;
-  --accent-hover: #8593ff;
-  --accent-weak: rgba(108, 125, 255, 0.18);
+  --accent: #7d8bff;
+  --accent-hover: #94a1ff;
+  --accent-weak: rgba(125, 139, 255, 0.2);
 
   --app-bg: #10104a;
 
   // 深色毛玻璃:半透明深蓝面板 + 模糊,叠在照片背景上
-  --panel-bg: rgba(16, 21, 44, 0.55);
+  --panel-bg: rgba(16, 21, 44, 0.6);
   --panel-blur: blur(22px) saturate(140%);
-  --panel-border: rgba(255, 255, 255, 0.09);
+  --panel-border: rgba(255, 255, 255, 0.12);
   --shadow-card: 0 10px 40px rgba(0, 0, 0, 0.35);
 
-  --surface-2: rgba(255, 255, 255, 0.07);
-  --surface-2-border: rgba(255, 255, 255, 0.1);
-  --surface-2-hover: rgba(255, 255, 255, 0.12);
+  --surface-2: rgba(255, 255, 255, 0.1);
+  --surface-2-border: rgba(255, 255, 255, 0.13);
+  --surface-2-hover: rgba(255, 255, 255, 0.16);
 
   --text-1: rgba(255, 255, 255, 0.9);
-  --text-2: rgba(255, 255, 255, 0.64);
-  --text-3: rgba(255, 255, 255, 0.4);
+  --text-2: rgba(255, 255, 255, 0.7);
+  --text-3: rgba(255, 255, 255, 0.45);
 
   --scrollbar-thumb: rgba(255, 255, 255, 0.2);
 }

@@ -2,11 +2,14 @@
   <div id="app">
     <a-config-provider :theme="antdTheme">
       <router-view v-if="isAuthPage" />
-      <template v-else>
+      <template v-else-if="ready">
         <AppBackground />
         <header class="app-header">
           <div class="header-inner">
-            <router-link class="logo" to="/">一览</router-link>
+            <router-link class="logo" to="/">
+              <LogoMark :size="26" class="logo-mark" />
+              <span>一览</span>
+            </router-link>
             <nav class="nav">
               <router-link
                 v-for="item in navItems"
@@ -72,7 +75,13 @@
         <main class="app-main">
           <router-view />
         </main>
-        <a-drawer v-model:open="navDrawer" placement="right" :width="280" title="一览">
+        <a-drawer v-model:open="navDrawer" placement="right" :width="280">
+          <template #title>
+            <span class="drawer-title">
+              <LogoMark :size="20" />
+              <span>一览</span>
+            </span>
+          </template>
           <div class="drawer-nav">
             <router-link
               v-for="item in navItems"
@@ -97,6 +106,12 @@
           </div>
         </a-drawer>
       </template>
+      <template v-else>
+        <AppBackground />
+        <div class="boot-loading">
+          <a-spin size="large" />
+        </div>
+      </template>
       <ChangePasswordModal :open="pwVisible" @close="pwVisible = false" />
     </a-config-provider>
   </div>
@@ -115,6 +130,7 @@ import {
 import { store, logout } from './store'
 import AppBackground from './components/AppBackground.vue'
 import ChangePasswordModal from './components/ChangePasswordModal.vue'
+import LogoMark from './components/LogoMark.vue'
 import { theme, toggleTheme } from './composables/useTheme'
 import { antdTheme } from './theme/theme'
 
@@ -134,7 +150,8 @@ export default defineComponent({
     SettingOutlined,
     MenuOutlined,
     AppBackground,
-    ChangePasswordModal
+    ChangePasswordModal,
+    LogoMark
   },
   setup() {
     return { theme, toggleTheme, antdTheme }
@@ -153,6 +170,9 @@ export default defineComponent({
   computed: {
     isAuthPage() {
       return !!this.$route.meta.public
+    },
+    ready() {
+      return store.ready
     },
     username() {
       return (store.user && store.user.username) || ''
@@ -196,15 +216,24 @@ export default defineComponent({
 }
 
 .logo {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   text-decoration: none;
-  color: var(--accent);
-  background: linear-gradient(120deg, var(--accent), var(--accent-hover));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-1);
+
+  .logo-mark {
+    flex-shrink: 0;
+  }
+}
+
+.drawer-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .nav {
@@ -304,6 +333,16 @@ export default defineComponent({
 
 .app-main {
   min-height: calc(100vh - var(--header-h));
+}
+
+// 登录态判断期间的全屏占位:不渲染顶栏,避免重定向到登录页前顶栏漏出
+.boot-loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
 }
 
 .mobile-only {

@@ -1,6 +1,6 @@
 <template>
   <div class="app-background">
-    <span v-if="isDark" class="app-background__img" :style="{ backgroundImage: `url('${bgUrl}')` }" />
+    <span class="app-background__img" :style="{ backgroundImage: `url('${bgUrl}')` }" />
     <span class="app-background__tint" />
   </div>
 </template>
@@ -8,19 +8,12 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { randomBackground } from '../utils/background'
-import { theme } from '../composables/useTheme'
 
 export default defineComponent({
   name: 'AppBackground',
   data() {
     return {
       bgUrl: randomBackground()
-    }
-  },
-  computed: {
-    // 浅色主题用柔和渐变,不加载照片;深色主题保留照片 + 蓝紫 tint
-    isDark() {
-      return theme.value === 'dark'
     }
   }
 })
@@ -32,10 +25,10 @@ export default defineComponent({
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  // 浅色:柔和蓝白渐变
+  // 浅色:照片未加载时的兜底底色,避免浅色面板后面闪深色
   background:
     radial-gradient(1200px 800px at 85% -10%, rgba(67, 83, 233, 0.12), transparent 60%),
-    radial-gradient(1000px 700px at -10% 110%, rgba(56, 152, 255, 0.1), transparent 55%),
+    radial-gradient(1000px 700px at -10% 110%, rgba(56, 152, 255, 0.1), transparent 30%),
     linear-gradient(180deg, #f2f5fb, #e9eef8);
 
   // 照片层：用普通 CSS background-image，浏览器会渐进渲染（加载到多少显示多少）。
@@ -48,17 +41,18 @@ export default defineComponent({
     background-repeat: no-repeat;
   }
 
-  // 深色:渐变遮罩在最上层，保证玻璃面板与文字可读
+  // 蒙层:浅色=轻微白晕(保留照片色彩),深色=蓝紫蒙层(保证玻璃面板与文字可读)
   &__tint {
     position: absolute;
     inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.12));
   }
 
   html[data-theme='dark'] & {
     background: #10104a;
 
     &__tint {
-      background: linear-gradient(135deg, rgba(24, 90, 157, 0.78), rgba(33, 26, 82, 0.84));
+      background: linear-gradient(135deg, rgba(24, 90, 157, 0.55), rgba(33, 26, 82, 0.6));
     }
   }
 }

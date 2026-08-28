@@ -2,7 +2,10 @@
   <div class="auth-page">
     <AppBackground />
     <div class="auth-card app-panel">
-      <div class="logo">一览</div>
+      <div class="brand">
+        <LogoMark :size="34" />
+        <div class="logo">一览</div>
+      </div>
       <div class="subtitle">创建账号 · 开启你的导航站</div>
       <a-input
         v-model:value="username"
@@ -41,11 +44,12 @@ import { defineComponent } from 'vue'
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
 import { register } from '../store'
 import AppBackground from './AppBackground.vue'
+import LogoMark from './LogoMark.vue'
 import { getApiError } from '../utils/api'
 
 export default defineComponent({
   name: 'Register',
-  components: { AppBackground, UserOutlined, LockOutlined },
+  components: { AppBackground, UserOutlined, LockOutlined, LogoMark },
   data() {
     return {
       username: '',
@@ -109,11 +113,24 @@ export default defineComponent({
     margin-bottom: 12px;
   }
 
+  .brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 4px;
+
+    .logo {
+      margin: 0;
+    }
+  }
+
   .logo {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
-    letter-spacing: 4px;
+    letter-spacing: 3px;
     text-align: center;
+    margin-top: 0;
     background: linear-gradient(120deg, var(--accent), var(--accent-hover));
     -webkit-background-clip: text;
     background-clip: text;
