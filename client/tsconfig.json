@@ -9,7 +9,6 @@
     "noEmit": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-    "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "useDefineForClassFields": true,
     "types": ["vite/client", "node"]
