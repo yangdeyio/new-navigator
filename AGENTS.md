@@ -28,6 +28,8 @@ Env vars/secrets on the Pages project:
 - `TURNSTILE_SECRET_KEY` — optional Turnstile check for register
 - D1 binding name: `DB` (database `navigator-db`; remote migrations: `npx wrangler d1 migrations apply navigator-db --remote`)
 
+Login/register are rate-limited by a D1 `auth_attempts` table (`0004_security.sql`): fixed 15-minute window, 5 failures per key (`login:<username>` / `register:<username>`), checked **before** PBKDF2 to avoid CPU-burn DoS; a 429 with `Retry-After` is returned once the window is exhausted, and a successful login/register resets the counter. Apply `0004_security.sql` to remote before deploying (`wrangler d1 migrations apply navigator-db --remote`).
+
 Local dev secrets live in `client/.dev.vars` (gitignored).
 
 ## Auth model
