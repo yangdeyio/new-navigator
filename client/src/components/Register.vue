@@ -6,7 +6,7 @@
         <LogoMark :size="34" />
         <div class="logo">一览</div>
       </div>
-      <div class="subtitle">创建账号 · 开启你的导航站</div>
+      <div class="subtitle">一览无余，一触即达</div>
       <a-input
         v-model:value="username"
         size="large"
