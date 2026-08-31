@@ -92,7 +92,7 @@ export default defineComponent({
   label {
     width: 88px;
     flex-shrink: 0;
-    color: rgba(0, 0, 0, 0.65);
+    color: var(--text-2);
     font-size: 14px;
   }
 

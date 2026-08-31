@@ -1,11 +1,11 @@
 import { createApp, type Component } from 'vue'
 import 'ant-design-vue/dist/reset.css'
+import './assets/styles/global.scss'
 import App from './App.vue'
 import router from './router/route'
 import {
-  Layout,
+  ConfigProvider,
   Menu,
-  Tabs,
   Button,
   Input,
   List,
@@ -15,7 +15,12 @@ import {
   Checkbox,
   Card,
   Modal,
-  Tooltip
+  Tooltip,
+  Dropdown,
+  Drawer,
+  Segmented,
+  Select,
+  Tag
 } from 'ant-design-vue'
 
 const app = createApp(App)
@@ -27,15 +32,9 @@ function register(name: string | undefined, component: Component): void {
   if (name) app.component(name, component)
 }
 
-register(Layout.name, Layout)
-register(Layout.Sider.name, Layout.Sider)
-register(Layout.Header.name, Layout.Header)
-register(Layout.Content.name, Layout.Content)
-register(Layout.Footer.name, Layout.Footer)
+register(ConfigProvider.name, ConfigProvider)
 register(Menu.name, Menu)
 register(Menu.Item.name, Menu.Item)
-register(Tabs.name, Tabs)
-register(Tabs.TabPane.name, Tabs.TabPane)
 register(Button.name, Button)
 register(Input.name, Input)
 register(Input.TextArea.name, Input.TextArea)
@@ -50,5 +49,10 @@ register(Spin.name, Spin)
 register(Popconfirm.name, Popconfirm)
 register(Checkbox.name, Checkbox)
 register(Card.name, Card)
+register(Dropdown.name, Dropdown)
+register(Drawer.name, Drawer)
+register(Segmented.name, Segmented)
+register(Select.name, Select)
+register(Tag.name, Tag)
 
 app.mount('#app')

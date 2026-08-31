@@ -1,6 +1,6 @@
 <template>
-  <div class="collect-page">
-    <div class="panel">
+  <div class="collect-page page-container">
+    <div class="panel app-panel">
       <div class="composer">
         <div class="field">
           <a-input v-model:value="title" placeholder="文章标题（必填）" :maxlength="120" @keyup.enter="submit" />
@@ -12,7 +12,7 @@
           <a-textarea v-model:value="note" :rows="2" placeholder="备注（可选）" :maxlength="500" />
         </div>
         <div class="composer-actions">
-          <span class="me">{{ username }}</span>
+          <span class="me">以 {{ username }} 身份收藏</span>
           <a-button type="primary" :loading="posting" @click="submit">收藏</a-button>
         </div>
       </div>
@@ -38,9 +38,9 @@
               </a-list-item-meta>
               <div class="item-foot">
                 <span class="time">{{ relativeTime(item.created_at) }}</span>
-                <span class="state" :class="{ read: item.is_read }">
+                <a-tag :color="item.is_read ? 'success' : 'warning'">
                   {{ item.is_read ? '已读' : '未读' }}
-                </span>
+                </a-tag>
                 <div class="ops">
                   <a-button size="small" @click="toggle(item)">
                     {{ item.is_read ? '标为未读' : '标为已读' }}
@@ -147,15 +147,10 @@ export default defineComponent({
 </script>
 <style lang="scss" scoped>
 .collect-page {
-  max-width: 720px;
-  margin: 0 auto;
-  padding-top: 48px;
-  box-sizing: border-box;
+  padding-top: 36px;
 }
 
 .panel {
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 12px;
   padding: 24px;
 }
 
@@ -173,27 +168,18 @@ export default defineComponent({
     justify-content: space-between;
 
     .me {
-      color: rgba(0, 0, 0, 0.45);
+      color: var(--text-3);
       font-size: 13px;
-
-      &::before {
-        content: '以 ';
-        color: rgba(0, 0, 0, 0.35);
-      }
-      &::after {
-        content: ' 身份收藏';
-        color: rgba(0, 0, 0, 0.35);
-      }
     }
   }
 }
 
 .item-title {
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.85);
+  color: var(--text-1);
 
   &.read {
-    color: rgba(0, 0, 0, 0.45);
+    color: var(--text-3);
     text-decoration: line-through;
   }
 }
@@ -205,21 +191,8 @@ export default defineComponent({
   margin-top: 4px;
 
   .time {
-    color: rgba(0, 0, 0, 0.35);
+    color: var(--text-3);
     font-size: 12px;
-  }
-
-  .state {
-    font-size: 12px;
-    padding: 1px 8px;
-    border-radius: 8px;
-    background: #fff7e6;
-    color: #fa8c16;
-
-    &.read {
-      background: #f6ffed;
-      color: #52c41a;
-    }
   }
 
   .ops {

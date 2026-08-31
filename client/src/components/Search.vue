@@ -1,9 +1,12 @@
 <template>
   <div id="wrapper">
     <div class="change">
-      <span :class="{'active': isBing}" @click="doBing">Bing</span>
-      <span :class="{'active': isBaidu}" @click="doBaidu">百度</span>
-      <span :class="{'active': isGoogle}" @click="doGoogle">Google</span>
+      <span
+        v-for="e in engines"
+        :key="e.key"
+        :class="{ active: engine === e.key }"
+        @click="engine = e.key"
+      >{{ e.label }}</span>
     </div>
     <div class="search-wrapper">
       <input v-model="value" type="text" placeholder="搜索，或输入网址回车打开…" @keypress.enter="search"/>
@@ -17,6 +20,14 @@
 import { defineComponent } from 'vue'
 import { SearchOutlined } from '@ant-design/icons-vue'
 
+type EngineKey = 'bing' | 'baidu' | 'google'
+
+const ENGINE_URLS: Record<EngineKey, (q: string) => string> = {
+  bing: (q) => `https://cn.bing.com/search?q=${q}`,
+  baidu: (q) => `https://www.baidu.com/s?wd=${q}`,
+  google: (q) => `https://www.google.com/search?q=${q}`
+}
+
 export default defineComponent({
   components: {
     SearchOutlined
@@ -24,41 +35,25 @@ export default defineComponent({
   data(){
     return {
       value: '',
-      isBing: true,
-      isBaidu: false,
-      isGoogle: false
+      engine: 'bing' as EngineKey,
+      engines: [
+        { key: 'bing', label: 'Bing' },
+        { key: 'baidu', label: '百度' },
+        { key: 'google', label: 'Google' }
+      ] as { key: EngineKey; label: string }[]
     }
-  },
-  mounted(){
-    this.doBing()
   },
   methods: {
-  search(){
-    const q = this.value.trim()
-    if(!q) return
-    const query = encodeURIComponent(q)
-    if(this.isGoogle){
-      window.open(`https://www.google.com/search?q=${query}`)
-    }else if(this.isBaidu){
-      window.open(`https://www.baidu.com/s?wd=${query}`)
-    }else{
-      window.open(`https://cn.bing.com/search?q=${query}`)
-    }
-  },
-    doBing(){
-      this.isBing = true
-      this.isBaidu = false
-      this.isGoogle = false
-    },
-    doBaidu(){
-      this.isBing = false
-      this.isBaidu = true
-      this.isGoogle = false
-    },
-    doGoogle(){
-      this.isBing = false
-      this.isBaidu = false
-      this.isGoogle = true
+    search(){
+      const q = this.value.trim()
+      if(!q) return
+      // 看起来像网址(无空格、域名形如 xx.yy[/path])就直达,兑现占位符的承诺
+      if (/^(https?:\/\/)?[\w-]+(\.[\w-]+)+(:\d+)?(\/\S*)?$/i.test(q)) {
+        window.open(/^https?:\/\//i.test(q) ? q : `https://${q}`)
+        return
+      }
+      const query = encodeURIComponent(q)
+      window.open(ENGINE_URLS[this.engine](query))
     }
   }
 })
@@ -70,6 +65,7 @@ export default defineComponent({
   align-items: center;
   flex-shrink: 0;
   gap: 14px;
+  padding-top: 8px;
 
   .change{
     display: inline-flex;
@@ -84,20 +80,20 @@ export default defineComponent({
       border-radius: 16px;
       font-size: 14px;
       font-weight: 500;
-      color: rgba(0, 0, 0, 0.55);
-      background: #f5f6f8;
-      border: 1px solid #e8e8e8;
+      color: var(--text-2);
+      background: var(--surface-2);
+      border: 1px solid var(--surface-2-border);
       cursor: pointer;
       transition: background 0.25s, color 0.25s, border-color 0.25s, box-shadow 0.25s;
       &:hover{
-        color: #1890ff;
-        border-color: #1890ff;
+        color: var(--accent);
+        border-color: var(--accent);
       }
       &.active{
         color: #ffffff;
-        background: #1890ff;
-        border-color: #1890ff;
-        box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+        background: var(--accent);
+        border-color: var(--accent);
+        box-shadow: 0 4px 12px var(--accent-weak);
       }
     }
   }
@@ -106,17 +102,17 @@ export default defineComponent({
     display: flex;
     align-items: center;
     padding: 0 6px 0 20px;
-    background: #ffffff;
-    border: 1px solid #e8e8e8;
+    background: var(--surface-2);
+    border: 1px solid var(--surface-2-border);
     border-radius: 999px;
     width: min(560px, 92%);
     box-sizing: border-box;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
     &:focus-within {
-      border-color: #1890ff;
-      box-shadow: 0 4px 16px rgba(24, 144, 255, 0.14);
+      border-color: var(--accent);
+      box-shadow: 0 4px 16px var(--accent-weak);
     }
 
     input{
@@ -125,9 +121,12 @@ export default defineComponent({
       min-width: 0;
       padding: 8px;
       font-size: 14px;
-      color: rgba(0, 0, 0, 0.85);
+      color: var(--text-1);
+      background: transparent;
+      border: none;
+      outline: none;
       &::placeholder {
-        color: rgba(0, 0, 0, 0.3);
+        color: var(--text-3);
       }
     }
     .search-button{
@@ -138,7 +137,7 @@ export default defineComponent({
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      background: #1890ff;
+      background: var(--accent);
       color: #ffffff;
       flex-shrink: 0;
       transition: background 0.2s ease, transform 0.15s ease;
@@ -150,7 +149,7 @@ export default defineComponent({
       }
 
       &:hover {
-        background: #4096ff;
+        background: var(--accent-hover);
       }
     }
   }

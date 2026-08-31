@@ -1,6 +1,10 @@
 <template>
-  <span class="web-icon-wrap">
-    <span v-if="failed" class="web-icon fallback" :style="{ background: color }">
+  <span class="web-icon-wrap" :style="wrapStyle">
+    <span
+      v-if="failed"
+      class="web-icon fallback"
+      :style="{ background: color, lineHeight: `${size}px`, fontSize: `${Math.max(10, Math.round(size * 0.45))}px` }"
+    >
       {{ letter }}
     </span>
     <img
@@ -18,35 +22,57 @@
 import { defineComponent } from 'vue'
 import { firstLetter } from '../utils/format'
 
-const PALETTE = ['#1890ff', '#722ed1', '#13c2c2', '#fa8c16', '#eb2f96', '#a0d911', '#f5222d']
+const PALETTE = ['#4353e9', '#722ed1', '#13c2c2', '#fa8c16', '#eb2f96', '#a0d911', '#f5222d']
+
+// 按可靠性排序返回 favicon 候选源:先用站点自带的 /favicon.ico(最通用、国内可访问),
+// 再退到 DuckDuckGo,最后 Google(覆盖面最广但国内可能不通)。全失败后由字母色块兜底。
+function faviconSources(host: string): string[] {
+  return [
+    `https://${host}/favicon.ico`,
+    `https://icons.duckduckgo.com/ip3/${host}.ico`,
+    `https://www.google.com/s2/favicons?domain=${host}&sz=64`
+  ]
+}
 
 export default defineComponent({
   props: {
     href: {
       type: String,
       default: ''
+    },
+    size: {
+      type: Number,
+      default: 16
     }
   },
   data() {
     return {
       host: '',
+      sources: [] as string[],
+      sourceIndex: 0,
       icon: '',
       loaded: false,
       failed: false,
-      color: '#1890ff'
+      color: '#4353e9'
     }
   },
   computed: {
     letter() {
       return firstLetter(this.host || this.href)
+    },
+    wrapStyle(): Record<string, string> {
+      return {
+        width: `${this.size}px`,
+        height: `${this.size}px`
+      }
     }
   },
   created() {
     try {
       const { hostname } = new URL(this.href)
       this.host = hostname
-      // 用 DuckDuckGo 的 favicon 服务，比自猜路径可靠得多
-      this.icon = `https://icons.duckduckgo.com/ip3/${hostname}.ico`
+      this.sources = faviconSources(hostname)
+      this.icon = this.sources[0]
       this.color = PALETTE[(hostname.charCodeAt(0) || 0) % PALETTE.length]
     } catch {
       this.failed = true
@@ -60,7 +86,13 @@ export default defineComponent({
     },
     onError() {
       if (this.loaded) return
-      this.failed = true
+      // 当前源加载失败就换下一个源；全部源失败后改用字母色块
+      this.sourceIndex += 1
+      if (this.sourceIndex < this.sources.length) {
+        this.icon = this.sources[this.sourceIndex]
+      } else {
+        this.failed = true
+      }
     }
   }
 })

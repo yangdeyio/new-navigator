@@ -1,7 +1,19 @@
 <template>
-  <div class="hello">
-    <div class="nav-panel">
+  <div class="navigator">
+    <div class="nav-panel app-panel">
       <Search class="search" />
+      <div class="panel-toolbar">
+        <a-tooltip title="导出书签">
+          <a-button type="text" @click="onExport"><ExportOutlined /></a-button>
+        </a-tooltip>
+        <a-tooltip title="导入书签">
+          <a-button type="text" @click="pickFile"><ImportOutlined /></a-button>
+        </a-tooltip>
+        <a-button type="primary" @click="onAdd()">
+          <PlusOutlined />
+          <span>添加书签</span>
+        </a-button>
+      </div>
       <a-spin :spinning="spinning" wrapper-class-name="bookmarks-spin">
         <SourceView @add="onAdd" @edit="onEdit" />
       </a-spin>
@@ -10,53 +22,34 @@
         <a-button size="small" @click="retryLoad">重试</a-button>
       </div>
     </div>
-    <div class="io-actions">
-      <a-tooltip title="导出书签">
-        <a-button @click="onExport"><ExportOutlined /></a-button>
-      </a-tooltip>
-      <a-tooltip title="导入书签">
-        <a-button @click="pickFile"><ImportOutlined /></a-button>
-      </a-tooltip>
-      <input
-        ref="fileInput"
-        type="file"
-        accept=".json,.html,.htm"
-        style="display: none"
-        @change="onImportFile"
-      />
-    </div>
-    <div class="add-item-container" @click="onAdd()">
-      <div class="add-item">
-        <div class="add">
-          <PlusOutlined />
-        </div>
+    <input
+      ref="fileInput"
+      type="file"
+      accept=".json,.html,.htm"
+      style="display: none"
+      @change="onImportFile"
+    />
+    <a-modal
+      v-model:open="visible"
+      :title="mode === 'add' ? '添加书签' : '编辑书签'"
+      ok-text="确认"
+      cancel-text="取消"
+      :width="420"
+      @ok="confirm"
+    >
+      <div class="form-field">
+        <label>名称</label>
+        <a-input v-model:value="name" placeholder="网站名称" @press-enter="confirm" />
       </div>
-    </div>
-    <div v-show="visible" class="mask">
-      <div class="edit">
-        <div class="title">
-          <span>{{ mode === 'add' ? '添加书签' : '编辑书签' }}</span>
-        </div>
-        <div class="format">
-          <label>名称</label>
-          <input v-model="name" type="text" @keyup.enter="confirm" />
-        </div>
-        <div class="format">
-          <label>网址</label>
-          <input v-model="ip" type="text" @keyup.enter="confirm" />
-        </div>
-        <div v-if="mode === 'add'" class="format">
-          <label>分类</label>
-          <select v-model="category" class="selected">
-            <option v-for="c in categoryOptions" :key="c.source" :value="c.source">{{ c.label }}</option>
-          </select>
-        </div>
-        <div class="buttons">
-          <a-button type="primary" @click="confirm">确认</a-button>
-          <a-button @click="cancel">取消</a-button>
-        </div>
+      <div class="form-field">
+        <label>网址</label>
+        <a-input v-model:value="url" placeholder="https://example.com" @press-enter="confirm" />
       </div>
-    </div>
+      <div v-if="mode === 'add'" class="form-field">
+        <label>分类</label>
+        <a-select v-model:value="category" :options="selectOptions" show-search />
+      </div>
+    </a-modal>
   </div>
 </template>
 
@@ -77,22 +70,22 @@ const MAX_VALUE_LENGTH = 120
 // 与后端 import.ts 的 MAX_IMPORT 一致
 const MAX_IMPORT = 2000
 
-interface CategoryOption {
-  source: BookmarkCategory
+interface SelectOption {
+  value: BookmarkCategory
   label: string
 }
 
 export default defineComponent({
-  name: 'HelloWorld',
+  name: 'Navigator',
   components: { Search, SourceView, PlusOutlined, ImportOutlined, ExportOutlined },
   data() {
     return {
       visible: false,
       mode: 'add' as 'add' | 'edit',
-      category: 'document',
+      category: 'document' as BookmarkCategory,
       editingId: null as number | null,
       name: '',
-      ip: ''
+      url: ''
     }
   },
   computed: {
@@ -102,12 +95,12 @@ export default defineComponent({
     bookmarksError() {
       return store.bookmarksError
     },
-    categoryOptions(): CategoryOption[] {
-      const legacy = LEGACY_CATEGORIES.map((c) => ({ source: c.key, label: c.label }))
+    selectOptions(): SelectOption[] {
+      const legacy = LEGACY_CATEGORIES.map((c) => ({ value: c.key, label: c.label }))
       const legacyKeys = new Set(LEGACY_CATEGORIES.map((c) => c.key))
       const extra = orderedCategories(store.bookmarks)
         .filter((key) => !legacyKeys.has(key))
-        .map((key) => ({ source: key, label: key }))
+        .map((key) => ({ value: key, label: key }))
       return [...legacy, ...extra]
     }
   },
@@ -120,7 +113,7 @@ export default defineComponent({
       this.category = category || 'document'
       this.editingId = null
       this.name = ''
-      this.ip = ''
+      this.url = ''
       this.visible = true
     },
     onEdit({ category, item }: { category: BookmarkCategory; item: { id: number; href: string; value: string } }) {
@@ -128,18 +121,18 @@ export default defineComponent({
       this.category = category
       this.editingId = item.id
       this.name = item.value
-      this.ip = item.href
+      this.url = item.href
       this.visible = true
     },
     close() {
       this.visible = false
       this.name = ''
-      this.ip = ''
+      this.url = ''
       this.editingId = null
     },
     async confirm() {
       const name = this.name.trim()
-      const href = this.ip.trim()
+      const href = this.url.trim()
       if (!name || !href) {
         message.warning('名称和网址不能为空')
         return
@@ -156,9 +149,6 @@ export default defineComponent({
       } catch (e) {
         message.error(getApiError(e, '操作失败'))
       }
-    },
-    cancel() {
-      this.close()
     },
     onExport() {
       const items = Object.entries(store.bookmarks).flatMap(([category, list]) =>
@@ -271,23 +261,20 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-  .hello {
-    height: 100vh;
-    padding: 36px 24px 36px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow: hidden;
-    box-sizing: border-box;
+.navigator {
+  height: calc(100vh - var(--header-h));
+  padding: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  box-sizing: border-box;
 
   .nav-panel {
     width: 100%;
     max-width: 1120px;
     height: 100%;
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -296,7 +283,20 @@ export default defineComponent({
 
     .search {
       flex-shrink: 0;
-      margin-bottom: 10px;
+      margin-bottom: 4px;
+    }
+
+    .panel-toolbar {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+      padding: 0 24px 10px;
+
+      :deep(.ant-btn-text) {
+        color: var(--text-2);
+      }
     }
 
     :deep(.bookmarks-spin) {
@@ -304,6 +304,7 @@ export default defineComponent({
       min-height: 0;
       display: flex;
       flex-direction: column;
+      padding: 0 24px;
     }
     :deep(.bookmarks-spin .ant-spin-container) {
       flex: 1;
@@ -323,145 +324,37 @@ export default defineComponent({
       padding: 8px 0 12px;
     }
   }
+}
 
-  .add-item-container {
-    position: fixed;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 60px;
-    height: 60px;
+// a-modal 会传送到 body,样式必须放在顶层,不能嵌套在 .navigator 下
+.form-field {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
 
-    .add-item {
-      width: 100%;
-      height: 100%;
-      transform: translateX(70%);
-      transition: all 0.5s;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-
-      &:hover {
-        transform: translateX(0);
-      }
-
-      .add {
-        border-radius: 50%;
-        box-shadow: 0 5px 14px rgba(0, 0, 0, 0.2);
-        width: 100%;
-        height: 100%;
-        background: #1890ff;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 30px;
-        color: #ffffff;
-        animation: add-transition infinite 1.5s;
-
-        &:hover {
-          animation: none;
-          background: #4096ff;
-        }
-      }
-    }
+  label {
+    width: 52px;
+    flex-shrink: 0;
+    color: var(--text-2);
+    font-size: 14px;
   }
 
-  .io-actions {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 10;
-    display: flex;
-    gap: 8px;
-
-    :deep(.ant-btn) {
-      border-radius: 8px;
-      border-color: #e8e8e8;
-      color: rgba(0, 0, 0, 0.65);
-      background: rgba(255, 255, 255, 0.9);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-
-      &:hover {
-        color: #1890ff;
-        border-color: #1890ff;
-      }
-    }
-  }
-
-  .mask {
-    position: fixed;
-    inset: 0;
-    z-index: 20;
-    background: rgba(0, 0, 0, 0.55);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    .edit {
-      width: 400px;
-      max-width: 92vw;
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 20px 24px 24px;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
-
-      .title {
-        font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 8px;
-      }
-
-      .format {
-        display: flex;
-        align-items: center;
-        margin: 16px 0;
-
-        label {
-          width: 52px;
-          flex-shrink: 0;
-          color: rgba(0, 0, 0, 0.65);
-          font-size: 14px;
-        }
-
-        input,
-        .selected {
-          flex: 1;
-          border: 1px solid #d9d9d9;
-          border-radius: 8px;
-          height: 34px;
-          padding: 0 10px;
-          font-size: 14px;
-          color: rgba(0, 0, 0, 0.85);
-          background: #fff;
-
-          &:focus {
-            outline: none;
-            border-color: #1890ff;
-            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.15);
-          }
-        }
-      }
-
-      .buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 12px;
-      }
-    }
+  :deep(.ant-input),
+  :deep(.ant-select) {
+    flex: 1;
   }
 }
 
-@keyframes add-transition {
-  0% {
-    transform: scale(1);
+@media (max-width: 768px) {
+  .navigator {
+    padding: 12px;
+
+    .panel-toolbar {
+      padding: 0 16px 10px;
+    }
+
+    :deep(.bookmarks-spin) {
+      padding: 0 16px;
+    }
   }
-  50% {
-    transform: scale(0.9);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-</style>
+}</style>
