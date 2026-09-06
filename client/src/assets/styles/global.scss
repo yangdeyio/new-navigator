@@ -73,6 +73,7 @@ body {
 
 // 共享面板配方:主页大面板、收藏/日志/留言面板、登录卡片都用它
 .app-panel {
+  opacity: 0.95;
   background: var(--panel-bg);
   -webkit-backdrop-filter: var(--panel-blur);
   backdrop-filter: var(--panel-blur);

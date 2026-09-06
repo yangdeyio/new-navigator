@@ -10,7 +10,7 @@
     <img
       v-else-if="icon"
       :src="icon"
-      :alt="host"
+      :alt="name || host"
       class="web-icon"
       @load="onLoad"
       @error="onError"
@@ -24,14 +24,11 @@ import { firstLetter } from '../utils/format'
 
 const PALETTE = ['#4353e9', '#722ed1', '#13c2c2', '#fa8c16', '#eb2f96', '#a0d911', '#f5222d']
 
-// 按可靠性排序返回 favicon 候选源:先用站点自带的 /favicon.ico(最通用、国内可访问),
-// 再退到 DuckDuckGo,最后 Google(覆盖面最广但国内可能不通)。全失败后由字母色块兜底。
+// 只用站点自带的 /favicon.ico:国内网络下 DuckDuckGo/Google 的 favicon 服务不可达(请求长时间挂起),
+// 且 Google 对未知域名会返回 200 的默认地球图(load 成功、不触发 onerror),无法可靠判定失败。
+// 源失败后立即由字母色块兜底。
 function faviconSources(host: string): string[] {
-  return [
-    `https://${host}/favicon.ico`,
-    `https://icons.duckduckgo.com/ip3/${host}.ico`,
-    `https://www.google.com/s2/favicons?domain=${host}&sz=64`
-  ]
+  return [`https://${host}/favicon.ico`]
 }
 
 export default defineComponent({
@@ -43,6 +40,11 @@ export default defineComponent({
     size: {
       type: Number,
       default: 16
+    },
+    // 书签显示名:兜底字母块优先取它,而非域名首字符
+    name: {
+      type: String,
+      default: ''
     }
   },
   data() {
@@ -58,7 +60,7 @@ export default defineComponent({
   },
   computed: {
     letter() {
-      return firstLetter(this.host || this.href)
+      return firstLetter(this.name || this.host || this.href)
     },
     wrapStyle(): Record<string, string> {
       return {
