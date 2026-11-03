@@ -1,6 +1,5 @@
 <template>
   <div class="auth-page">
-    <AppBackground />
     <div class="auth-card app-panel">
       <div class="brand">
         <LogoMark :size="34" />
@@ -43,13 +42,12 @@
 import { defineComponent } from 'vue'
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
 import { register } from '../store'
-import AppBackground from './AppBackground.vue'
 import LogoMark from './LogoMark.vue'
 import { getApiError } from '../utils/api'
 
 export default defineComponent({
   name: 'Register',
-  components: { AppBackground, UserOutlined, LockOutlined, LogoMark },
+  components: { UserOutlined, LockOutlined, LogoMark },
   data() {
     return {
       username: '',

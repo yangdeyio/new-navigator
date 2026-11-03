@@ -1,9 +1,10 @@
 <template>
   <div id="app">
     <a-config-provider :theme="antdTheme">
+      <!-- 全站唯一的背景层:放在分支之外,路由切换时不会重建,背景图不会跳动 -->
+      <AppBackground />
       <router-view v-if="isAuthPage" />
       <template v-else-if="ready">
-        <AppBackground />
         <header class="app-header">
           <div class="header-inner">
             <router-link class="logo" to="/">
@@ -107,7 +108,6 @@
         </a-drawer>
       </template>
       <template v-else>
-        <AppBackground />
         <div class="boot-loading">
           <a-spin size="large" />
         </div>

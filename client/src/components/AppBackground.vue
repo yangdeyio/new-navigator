@@ -7,13 +7,13 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { randomBackground } from '../utils/background'
+import { backgroundUrl } from '../utils/background'
 
 export default defineComponent({
   name: 'AppBackground',
   data() {
     return {
-      bgUrl: randomBackground()
+      bgUrl: backgroundUrl()
     }
   }
 })

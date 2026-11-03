@@ -1,6 +1,5 @@
 <template>
   <div class="login-page">
-    <AppBackground />
     <div class="auth-card app-panel">
       <div class="brand">
         <LogoMark :size="34" />
@@ -44,13 +43,12 @@ import { defineComponent } from 'vue'
 import axios from 'axios'
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
 import { store, login } from '../store'
-import AppBackground from './AppBackground.vue'
 import LogoMark from './LogoMark.vue'
 import { getApiError } from '../utils/api'
 
 export default defineComponent({
   name: 'Login',
-  components: { AppBackground, UserOutlined, LockOutlined, LogoMark },
+  components: { UserOutlined, LockOutlined, LogoMark },
   data() {
     return {
       username: '',
