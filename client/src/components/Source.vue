@@ -16,7 +16,7 @@
           target="_blank"
           v-bind="anchorAttrs(item.href)"
         >
-          <Favicon :href="item.href" :size="32" class="card-icon" />
+          <Favicon :href="item.href" :name="item.value" :size="32" class="card-icon" />
           <div class="value-text">{{ item.value }}</div>
           <div class="ops" @click.stop.prevent>
             <EditOutlined class="op edit" title="编辑" @click="$emit('edit', { category: activeKey, item })" />

@@ -198,6 +198,7 @@ export default defineComponent({
   top: 0;
   z-index: 100;
   height: var(--header-h);
+  opacity: 0.93;
   background: var(--panel-bg);
   -webkit-backdrop-filter: var(--panel-blur);
   backdrop-filter: var(--panel-blur);

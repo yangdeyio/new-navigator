@@ -27,7 +27,7 @@
             <a-list-item>
               <a-list-item-meta>
                 <template #avatar>
-                  <Favicon :href="item.href" />
+                  <Favicon :href="item.href" :name="item.title" />
                 </template>
                 <template #title>
                   <a :href="item.href" target="_blank" class="item-title" :class="{ read: item.is_read }">
